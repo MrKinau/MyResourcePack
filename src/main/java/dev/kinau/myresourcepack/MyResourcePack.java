@@ -85,7 +85,7 @@ public class MyResourcePack implements ModInitializer {
 	private Checkbox createCheckbox(int scaledWidth, ServerSetting setting, int y, boolean reloadResources) {
 		int width = 200;
 		int height = 20;
-        return new Checkbox(scaledWidth / 2 - (width - 130), y, width, height, Component.translatable("override_textures_button"), setting.overrideTextures(), true) {
+        return new Checkbox(scaledWidth / 2 - (width - 140), y, width, height, Component.translatable("override_textures_button"), setting.overrideTextures(), true) {
 			@Override
 			public void onPress() {
 				super.onPress();
