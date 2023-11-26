@@ -1,33 +1,26 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "myresourcepack",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "My Resource Pack",
+	"description": "Stop servers from overwriting your resource packs!",
 	"authors": [
-		"Me!"
+		"MrKinau"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/MrKinau/MyResourcePack",
+		"repo": "https://github.com/MrKinau/MyResourcePack"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
-	"environment": "*",
+	"icon": "assets/myresourcepack/icon.png",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
-		],
-		"client": [
-			"com.example.ExampleModClient"
+			"dev.kinau.myresourcepack.MyResourcePack"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
-		{
-			"config": "modid.client.mixins.json",
-			"environment": "client"
-		}
+		"myresourcepack.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.14.22",
@@ -35,7 +28,5 @@
 		"java": ">=17",
 		"fabric-api": "*"
 	},
-	"suggests": {
-		"another-mod": "*"
-	}
+	"accessWidener": "myresourcepack.accesswidener"
 }
