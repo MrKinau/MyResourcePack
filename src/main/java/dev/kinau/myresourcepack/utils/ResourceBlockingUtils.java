@@ -20,7 +20,9 @@ import java.nio.charset.StandardCharsets;
 public class ResourceBlockingUtils {
 
     public static boolean isBlockingEnabled() {
-        return !MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(MyResourcePack.getInstance().getCurrentServer()).overrideTextures();
+        String currentServer = MyResourcePack.getInstance().getCurrentServer();
+        if (currentServer == null) return false;
+        return !MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer).overrideTextures();
     }
 
     public static boolean shouldModify(ResourceLocation resourceLocation) {

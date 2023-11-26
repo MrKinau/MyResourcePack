@@ -9,9 +9,12 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,32 +48,55 @@ public class MyResourcePack implements ModInitializer {
 	private void registerGui() {
 		try {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-				if (!(screen instanceof PackSelectionScreen packSelectionScreen)) return;
+				if (!(screen instanceof PackSelectionScreen)) return;
 				if (!Minecraft.getInstance().getResourcePackRepository().isAvailable("server")) return;
 				String currentServer = getCurrentServer();
 				if (currentServer == null) return;
 
 				ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
 
-				int width = 200;
-				int height = 20;
-				Checkbox checkbox = new Checkbox(scaledWidth / 2 - 60, scaledHeight - height - 5, width, height, Component.translatable("override_textures_button"), setting.overrideTextures(), true) {
-					@Override
-					public void onPress() {
-						super.onPress();
-						setting.overrideTextures(selected());
-						try {
-							packSettings.saveConfig();
-						} catch (IOException ex) {
-							LOGGER.error("Couldn't save config", ex);
-						}
-						reloadResources = true;
-					}
-				};
+				Checkbox checkbox = createCheckbox(scaledWidth, setting, scaledHeight - 20 - 5, true);
+				Screens.getButtons(screen).add(checkbox);
+			});
+			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+				if (!(screen instanceof ConfirmScreen confirmScreen)) return;
+				if (!(confirmScreen.getTitle().getContents() instanceof TranslatableContents translatableContents
+						&& translatableContents.getKey().startsWith("multiplayer.requiredTexturePrompt.line"))) return;
+				String currentServer = getCurrentServer();
+				if (currentServer == null) return;
+
+				ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+
+				Screens.getButtons(screen).forEach(abstractWidget -> {
+					abstractWidget.setPosition(abstractWidget.getX(), abstractWidget.getY() + 15);
+				});
+
+				int y = screen.children().get(0).getRectangle().position().y() - 25;
+
+				Checkbox checkbox = createCheckbox(scaledWidth, setting, y, false);
 				Screens.getButtons(screen).add(checkbox);
 			});
 		} catch (NoClassDefFoundError ex) {
 			LOGGER.error("Couldn't register screen handler as Fabric Screen isn't installed", ex);
 		}
+	}
+
+	@NotNull
+	private Checkbox createCheckbox(int scaledWidth, ServerSetting setting, int y, boolean reloadResources) {
+		int width = 200;
+		int height = 20;
+        return new Checkbox(scaledWidth / 2 - (width - 130), y, width, height, Component.translatable("override_textures_button"), setting.overrideTextures(), true) {
+			@Override
+			public void onPress() {
+				super.onPress();
+				setting.overrideTextures(selected());
+				try {
+					packSettings.saveConfig();
+				} catch (IOException ex) {
+					LOGGER.error("Couldn't save config", ex);
+				}
+				MyResourcePack.this.reloadResources = reloadResources;
+			}
+		};
 	}
 }
