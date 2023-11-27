@@ -4,7 +4,6 @@ import dev.kinau.myresourcepack.config.ServerSetting;
 import lombok.Getter;
 import lombok.Setter;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
@@ -61,7 +60,7 @@ public class MyResourcePack implements ModInitializer {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 				if (!(screen instanceof ConfirmScreen confirmScreen)) return;
 				if (!(confirmScreen.getTitle().getContents() instanceof TranslatableContents translatableContents
-						&& translatableContents.getKey().startsWith("multiplayer.requiredTexturePrompt.line"))) return;
+						&& (translatableContents.getKey().startsWith("multiplayer.requiredTexturePrompt.line") || translatableContents.getKey().startsWith("multiplayer.texturePrompt.line")))) return;
 				String currentServer = getCurrentServer();
 				if (currentServer == null) return;
 
