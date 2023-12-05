@@ -1,3 +1,17 @@
 {
-  "override_textures_button": "Client-Texturen überschreiben"
+  "override_textures_button": "Dem Server erlauben Client-Ressourcen zu überschreiben",
+  "ignore_resource_pack": "Ignorieren",
+  "enable_resource_blocking": "My Resource Pack",
+  "enable_resource_blocking_description": "Server-Ressourcen filtern, um Überschreibungen zu blockieren",
+  "resourceSelectionScreen.tab.overridden.title": "Überschriebene Ressourcen",
+  "resourceSelectionScreen.tab.additional.title": "Hinzugefügte Ressourcen",
+  "resourceSelectionScreen.reset": "Zurücksetzen",
+  "resourceSelectionScreen.action.unknown": "Mehrere Einstellungen",
+  "resourceSelectionScreen.override.action.pass": "Überschreibung erlauben",
+  "resourceSelectionScreen.override.action.block": "Überschreibung blockieren",
+  "resourceSelectionScreen.override.action.merge": "Dateien zusammenführen",
+  "resourceSelectionScreen.addition.action.pass": "Hinzufügen erlauben",
+  "resourceSelectionScreen.addition.action.block": "Hinzufügen blockieren",
+  "myResourcePack.notification.disabledDueToError.title": "Deaktiviere My Resource Pack",
+  "myResourcePack.notification.disabledDueToError.description": "Fehler während des Ressourcen-Neuladen"
 }

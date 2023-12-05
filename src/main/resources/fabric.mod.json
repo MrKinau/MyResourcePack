@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "myresourcepack",
 	"version": "${version}",
-	"name": "My Resource Pack",
-	"description": "Stop servers from overwriting your resource packs!",
+	"name": "My Resource Pack, My Choice",
+	"description": "Stop servers from overriding your resource packs! Allows you to skip and disable certain server resources",
 	"authors": [
 		"MrKinau"
 	],
@@ -28,5 +28,10 @@
 		"java": ">=17",
 		"fabric-api": "*"
 	},
-	"accessWidener": "myresourcepack.accesswidener"
+	"accessWidener": "myresourcepack.accesswidener",
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/class_3258": ["dev/kinau/myresourcepack/expander/PackResourceExpander"]
+		}
+	}
 }

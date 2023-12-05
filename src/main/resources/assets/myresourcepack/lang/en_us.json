@@ -1,3 +1,17 @@
 {
-  "override_textures_button": "Override Client Textures"
+  "override_textures_button": "Allow the server pack to override client resources",
+  "ignore_resource_pack": "Ignore",
+  "enable_resource_blocking": "My Resource Pack",
+  "enable_resource_blocking_description": "Filter server resources to block overrides",
+  "resourceSelectionScreen.tab.overridden.title": "Overridden Resources",
+  "resourceSelectionScreen.tab.additional.title": "Additional Resources",
+  "resourceSelectionScreen.reset": "Reset To Defaults",
+  "resourceSelectionScreen.action.unknown": "Multiple Settings",
+  "resourceSelectionScreen.override.action.pass": "Allow Override",
+  "resourceSelectionScreen.override.action.block": "Block Override",
+  "resourceSelectionScreen.override.action.merge": "Merge Files",
+  "resourceSelectionScreen.addition.action.pass": "Allow Addition",
+  "resourceSelectionScreen.addition.action.block": "Block Addition",
+  "myResourcePack.notification.disabledDueToError.title": "Disabling My Resourcepack",
+  "myResourcePack.notification.disabledDueToError.description": "Error during resource reloading"
 }

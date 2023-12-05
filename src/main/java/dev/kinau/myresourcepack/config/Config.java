@@ -13,7 +13,7 @@ public class Config {
                 .filter(serverSetting -> serverSetting.ip().equals(server)).findAny();
         if (optSetting.isPresent())
             return optSetting.get();
-        ServerSetting setting = new ServerSetting(server, true);
+        ServerSetting setting = new ServerSetting(server, true, new ArrayList<>(), new ArrayList<>());
         serverSettings.add(setting);
         return setting;
     }

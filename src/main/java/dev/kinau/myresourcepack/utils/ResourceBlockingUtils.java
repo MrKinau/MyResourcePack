@@ -5,6 +5,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import dev.kinau.myresourcepack.MyResourcePack;
+import dev.kinau.myresourcepack.config.ResourceAction;
+import dev.kinau.myresourcepack.config.ResourceRule;
+import dev.kinau.myresourcepack.config.ServerSetting;
+import dev.kinau.myresourcepack.config.VanillaResourceAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -16,6 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
 
 public class ResourceBlockingUtils {
 
@@ -25,28 +31,42 @@ public class ResourceBlockingUtils {
         return !MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer).overrideTextures();
     }
 
-    public static boolean shouldModify(ResourceLocation resourceLocation) {
-        if (!resourceLocation.getNamespace().equals("minecraft"))
-            return false;
-        if (resourceLocation.getPath().startsWith("models/"))
-            return true;
-        if (resourceLocation.getPath().startsWith("lang/"))
-            return true;
-        return false;
+    public static boolean supportsMerging(ResourceLocation resourceLocation) {
+        if (resourceLocation == null) return false;
+        return resourceLocation.getPath().endsWith(".json");
     }
 
-    public static boolean shouldBlockOrModify(ResourceLocation resourceLocation) {
+    public static Optional<ServerSetting> getServerSetting() {
+        String currentServer = MyResourcePack.getInstance().getCurrentServer();
+        if (currentServer == null) return Optional.empty();
+        return Optional.of(MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer));
+    }
+
+    public static ResourceAction getConfiguredResourceAction(ResourceLocation resourceLocation) {
+        Optional<ServerSetting> optSettings = getServerSetting();
+        if (optSettings.isEmpty()) return ResourceAction.PASS;
+        ServerSetting setting = optSettings.get();
+        if (setting.overrideTextures()) return ResourceAction.PASS;
+
+        String path = resourceLocation.toString();
+
+        VanillaResourceAction resourceAction = getDefaultResourceAction(resourceLocation);
+        List<ResourceRule> rules = resourceAction.overridesVanilla()
+                ? setting.overrideRules()
+                : setting.additionRules();
+
+        for (int i = rules.size() - 1; i >= 0; i--) {
+            ResourceRule rule = rules.get(i);
+            if (rule.matches(path))
+                return rule.action();
+        }
+
+        return resourceAction.action();
+    }
+
+    public static VanillaResourceAction getDefaultResourceAction(ResourceLocation resourceLocation) {
         if (!resourceLocation.getNamespace().equals("minecraft"))
-            return false;
-        if (resourceLocation.getPath().startsWith("shaders/"))
-            return false;
-        if (resourceLocation.getPath().startsWith("atlases/"))
-            return false;
-        if (resourceLocation.getPath().startsWith("blockstates/"))
-            return false;
-        //TODO: Make acceptable changes configurable
-        if (resourceLocation.getPath().startsWith("textures/gui/sprites/boss_bar/"))
-            return false;
+            return new VanillaResourceAction(ResourceAction.PASS, false);
 
         boolean overridesVanilla = true;
         try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
@@ -61,16 +81,36 @@ public class ResourceBlockingUtils {
             }
         }
 
-        if (overridesVanilla && resourceLocation.getPath().startsWith("font/")) {
+        if (resourceLocation.getPath().startsWith("shaders/"))
+            return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
+        if (resourceLocation.getPath().startsWith("atlases/"))
+            return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
+        if (resourceLocation.getPath().startsWith("blockstates/"))
+            return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
+        if (resourceLocation.getPath().startsWith("textures/gui/sprites/boss_bar/"))
+            return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
+        if (resourceLocation.getPath().startsWith("textures/misc/pumpkinblur.png"))
+            return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
+
+        if (overridesVanilla) {
             // only allow overriding unifont (e.g. to add characters into the default font)
             // Although it is bad practice to add characters to the default font instead of
             // adding them to a new font, too many servers do this and blocking all characters
             // might end in UIs not showing up. This does not override the default minecraft font
             // (at least not the ascii, nonlatin_european and accented glyph providers).
-            return resourceLocation.getPath().equals("include/unifont.zip");
+            if (resourceLocation.getPath().startsWith("font/"))
+                return resourceLocation.getPath().equals("include/unifont.zip")
+                        ? new VanillaResourceAction(ResourceAction.BLOCK, true)
+                        : new VanillaResourceAction(ResourceAction.PASS, true);
+            if (resourceLocation.getPath().startsWith("models/"))
+                return new VanillaResourceAction(ResourceAction.MERGE, true);
+            if (resourceLocation.getPath().startsWith("lang/"))
+                return new VanillaResourceAction(ResourceAction.MERGE, true);
+            if (resourceLocation.getPath().equals("sounds.json"))
+                return new VanillaResourceAction(ResourceAction.MERGE, true);
         }
 
-        return overridesVanilla;
+        return overridesVanilla ? new VanillaResourceAction(ResourceAction.BLOCK, true) : new VanillaResourceAction(ResourceAction.PASS, false);
     }
 
     private static ModelTextureData getModelTextures(InputStream inputStream) {
@@ -87,7 +127,7 @@ public class ResourceBlockingUtils {
         return null;
     }
 
-    public static IoSupplier<InputStream> modifyModelData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    public static IoSupplier<InputStream> mergeModelData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
         return () -> {
             try {
                 ModelTextureData textures = getModelTextures(original.get());
@@ -119,7 +159,7 @@ public class ResourceBlockingUtils {
         return null;
     }
 
-    private static IoSupplier<InputStream> modifyJsonData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    private static IoSupplier<InputStream> mergeJsonData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
         return () -> {
             try {
                 JsonObject jsonData = getJsonData(original.get());
@@ -139,11 +179,13 @@ public class ResourceBlockingUtils {
         };
     }
 
-    public static IoSupplier<InputStream> modifyData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    public static IoSupplier<InputStream> mergeData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
         if (resourceLocation.getPath().startsWith("models/") && resourceLocation.getPath().endsWith(".json")) {
-            return modifyModelData(resourceLocation, original);
+            return mergeModelData(resourceLocation, original);
         } else if (resourceLocation.getPath().startsWith("lang/") && resourceLocation.getPath().endsWith(".json")) {
-            return modifyJsonData(resourceLocation, original);
+            return mergeJsonData(resourceLocation, original);
+        } else if (resourceLocation.getPath().equals("sounds.json")) {
+            return mergeJsonData(resourceLocation, original);
         }
         return original;
     }

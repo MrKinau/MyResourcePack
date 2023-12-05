@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Accessors(fluent = true)
@@ -14,4 +17,6 @@ import lombok.experimental.Accessors;
 public class ServerSetting {
     private String ip;
     private boolean overrideTextures;
+    private List<ResourceRule> overrideRules = new ArrayList<>();
+    private List<ResourceRule> additionRules = new ArrayList<>();
 }
