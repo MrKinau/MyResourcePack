@@ -43,7 +43,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 	@Inject(method = "getResource*", at = @At("HEAD"), cancellable = true)
 	private void onGetResource(PackType packType, ResourceLocation resourceLocation, CallbackInfoReturnable<IoSupplier<InputStream>> cir) {
 		if (!ResourceBlockingUtils.isBlockingEnabled()) return;
-		if (((FilePackResources)(Object)this).packId().equals("server") && packType == PackType.CLIENT_RESOURCES) {
+		if (((FilePackResources)(Object)this).packId().startsWith("server/") && packType == PackType.CLIENT_RESOURCES) {
 //			long start = System.currentTimeMillis();
 			ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(resourceLocation);
 			if (action != ResourceAction.PASS) {
@@ -73,7 +73,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 	@Inject(method = "listResources", at = @At("HEAD"), cancellable = true)
 	private void onListResources(PackType packType, String namespace, String path, PackResources.ResourceOutput resourceOutput, CallbackInfo ci) {
 		if (!ResourceBlockingUtils.isBlockingEnabled()) return;
-		if (((FilePackResources)(Object)this).packId().equals("server") && packType == PackType.CLIENT_RESOURCES) {
+		if (((FilePackResources)(Object)this).packId().startsWith("server/") && packType == PackType.CLIENT_RESOURCES) {
 //			long start = System.currentTimeMillis();
 			try {
 				ZipFile zipFile = zipFileAccess.getOrCreateZipFile();

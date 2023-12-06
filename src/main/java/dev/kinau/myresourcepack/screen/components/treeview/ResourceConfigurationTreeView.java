@@ -19,7 +19,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     private final Minecraft minecraft;
 
     public ResourceConfigurationTreeView(ResourceSelectionScreen screen, int width, int height, ResourceTab resourceTab, ResourceDirectory rootDirectory, Minecraft minecraft) {
-        super(minecraft, width, height, 43, height - 32, 24);
+        super(minecraft, width, height - 75, 43, 24);
         this.screen = screen;
         this.minecraft = minecraft;
         this.resourceTab = resourceTab;
@@ -56,8 +56,9 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
         for (int o = 0; o < n; ++o) {
             int p = this.getRowTop(o);
             int q = this.getRowBottom(o);
-            if (q < this.y0 || p > this.y1) continue;
-            this.renderItem(guiGraphics, i, j, f, o, k, p, l, m);
+            if (q >= this.getY() && p <= this.getBottom()) {
+                this.renderItem(guiGraphics, i, j, f, o, k, p, l, m);
+            }
         }
     }
 
@@ -66,7 +67,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
         int prevHeight = 0;
         for (int j = 0; j < i; j++)
             prevHeight += getEntry(j).getHeight();
-        return this.y0 + 4 - (int) this.getScrollAmount() + prevHeight + this.headerHeight;
+        return this.getY() + 4 - (int) this.getScrollAmount() + prevHeight + this.headerHeight;
     }
 
     @Override
@@ -87,11 +88,11 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     protected void ensureVisible(MyResourcePackEntry entry) {
         int k;
         int i = this.getRowTop(this.children().indexOf(entry));
-        int j = i - this.y0 - 4 - entry.getHeight();
+        int j = i - this.getY() - 4 - entry.getHeight();
         if (j < 0) {
             this.scroll(j);
         }
-        if ((k = this.y1 - i - (2 * entry.getHeight())) < 0) {
+        if ((k = this.getBottom() - i - (2 * entry.getHeight())) < 0) {
             this.scroll(-k);
         }
     }
@@ -102,13 +103,13 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
 
     protected final MyResourcePackEntry getMyEntryAtPosition(double x, double y) {
         int i = this.getRowWidth() / 2;
-        int k = this.x0 + this.width / 2;
+        int k = this.getX() + this.width / 2;
         if (x >= getScrollbarPosition())
             return null;
         if (x > k + i)
             return null;
 
-        int clickHeight = Mth.floor(y - (double) this.y0) - this.headerHeight + (int) getScrollAmount() - 7;
+        int clickHeight = Mth.floor(y - (double) this.getY()) - this.headerHeight + (int) getScrollAmount() - 7;
 
         int prevHeight = 0;
         for (int j = 0; j < getItemCount(); j++) {
@@ -146,8 +147,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
                 setDragging(true);
                 return true;
             }
-        } else {
-            this.clickedHeader((int)(x - (double)(this.x0 + this.width / 2 - this.getRowWidth() / 2)), (int)(y - (double)this.y0) + (int)this.getScrollAmount() - 4);
+        } else if (this.clickedHeader((int)(x - (double)(this.getX() + this.width / 2 - this.getRowWidth() / 2)), (int)(y - (double)this.getY()) + (int)this.getScrollAmount() - 4)) {
             return true;
         }
         return isScrolling(x, y, button);

@@ -10,7 +10,9 @@
     "defaultRequire": 1
   },
   "client": [
+    "ClientCommonPacketListenerImplMixin",
     "MinecraftMixin",
-    "OptionsMixin"
+    "OptionsMixin",
+    "PackConfirmScreenMixin"
   ]
 }
