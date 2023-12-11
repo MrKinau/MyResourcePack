@@ -27,11 +27,5 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
-	},
-	"accessWidener": "myresourcepack.accesswidener",
-	"custom": {
-		"loom:injected_interfaces": {
-			"net/minecraft/class_3258": ["dev/kinau/myresourcepack/expander/PackResourceExpander"]
-		}
 	}
 }
