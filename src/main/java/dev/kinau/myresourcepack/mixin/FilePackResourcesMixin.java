@@ -11,7 +11,6 @@ import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.IoSupplier;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,11 +33,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 	}
 
 	@Shadow
-	@Final
-	private FilePackResources.SharedZipFileAccess zipFileAccess;
-
-	@Shadow
-	protected abstract String addPrefix(String string);
+	private ZipFile zipFile;
 
 	@Inject(method = "getResource*", at = @At("HEAD"), cancellable = true)
 	private void onGetResource(PackType packType, ResourceLocation resourceLocation, CallbackInfoReturnable<IoSupplier<InputStream>> cir) {
@@ -48,12 +43,12 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 			ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(resourceLocation);
 			if (action != ResourceAction.PASS) {
 				if (action == ResourceAction.MERGE) {
-					ZipFile zipFile = this.zipFileAccess.getOrCreateZipFile();
+					ZipFile zipFile = this.zipFile;
 					if (zipFile == null) {
 						cir.setReturnValue(null);
 						return;
 					}
-					ZipEntry zipEntry = zipFile.getEntry(this.addPrefix(getPathFromLocation(packType, resourceLocation)));
+					ZipEntry zipEntry = zipFile.getEntry(getPathFromLocation(packType, resourceLocation));
 					if (zipEntry == null) {
 						cir.setReturnValue(null);
 						return;
@@ -76,13 +71,13 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 		if (((FilePackResources)(Object)this).packId().equals("server") && packType == PackType.CLIENT_RESOURCES) {
 //			long start = System.currentTimeMillis();
 			try {
-				ZipFile zipFile = zipFileAccess.getOrCreateZipFile();
+				ZipFile zipFile = this.zipFile;
 
 				if (zipFile == null) {
 					return;
 				}
 				Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
-				String string3 = this.addPrefix(packType.getDirectory() + "/" + namespace + "/");
+				String string3 = packType.getDirectory() + "/" + namespace + "/";
 				String string4 = string3 + path + "/";
 				while (enumeration.hasMoreElements()) {
 					String string5;
@@ -112,13 +107,13 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 
 	@Override
 	public ResourceDirectory myResourcePack$createResourceTree(PackType packType, String namespace) {
-		ZipFile zipFile = this.zipFileAccess.getOrCreateZipFile();
+		ZipFile zipFile = this.zipFile;
 		ResourceDirectory root = new ResourceDirectory(new ResourceLocation(namespace, ""));
 		if (zipFile == null) {
 			return root;
 		}
 		Enumeration<? extends ZipEntry> entries = zipFile.entries();
-		String prefixedNamespace = this.addPrefix(packType.getDirectory() + "/" + namespace);
+		String prefixedNamespace = packType.getDirectory() + "/" + namespace;
 		while (entries.hasMoreElements()) {
 			String currName;
 			ZipEntry zipEntry = entries.nextElement();

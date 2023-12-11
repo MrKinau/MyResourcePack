@@ -1,6 +1,5 @@
 package dev.kinau.myresourcepack.screen.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.Getter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -11,10 +10,10 @@ import net.minecraft.resources.ResourceLocation;
 @Getter
 public class ExpandButton extends AbstractButton {
 
-    private static final ResourceLocation BUTTON_FOLD_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/fold_highlighted");
-    private static final ResourceLocation BUTTON_FOLD_SPRITE = new ResourceLocation( "myresourcepack", "widget/fold");
-    private static final ResourceLocation BUTTON_EXPAND_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/expand_highlighted");
-    private static final ResourceLocation BUTTON_EXPAND_SPRITE = new ResourceLocation("myresourcepack", "widget/expand");
+    private static final ResourceLocation BUTTON_FOLD_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/fold_highlighted.png");
+    private static final ResourceLocation BUTTON_FOLD_SPRITE = new ResourceLocation( "myresourcepack", "textures/gui/sprites/widget/fold.png");
+    private static final ResourceLocation BUTTON_EXPAND_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/expand_highlighted.png");
+    private static final ResourceLocation BUTTON_EXPAND_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/expand.png");
 
     private boolean expanded;
 
@@ -40,11 +39,7 @@ public class ExpandButton extends AbstractButton {
 
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
-        RenderSystem.enableDepthTest();
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, this.alpha);
-        RenderSystem.enableBlend();
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(resourceLocation, this.getX(), this.getY(), this.width, this.height);
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        this.renderTexture(guiGraphics, resourceLocation, this.getX(), this.getY(), 0, 0, 0, this.width, this.height, this.width, this.height);
     }
 }

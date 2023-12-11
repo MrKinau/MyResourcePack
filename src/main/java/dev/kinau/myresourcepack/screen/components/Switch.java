@@ -1,6 +1,5 @@
 package dev.kinau.myresourcepack.screen.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.minecraft.client.Minecraft;
@@ -16,10 +15,10 @@ import net.minecraft.util.Mth;
 @Getter
 @Accessors(fluent = true)
 public class Switch extends AbstractButton {
-    private static final ResourceLocation SWITCH_DISABLED_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/disabled_highlighted");
-    private static final ResourceLocation SWITCH_DISABLED_SPRITE = new ResourceLocation( "myresourcepack", "widget/disabled");
-    private static final ResourceLocation SWITCH_ENABLED_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/enabled_highlighted");
-    private static final ResourceLocation SWITCH_ENABLED_SPRITE = new ResourceLocation("myresourcepack", "widget/enabled");
+    private static final ResourceLocation SWITCH_DISABLED_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/disabled_highlighted.png");
+    private static final ResourceLocation SWITCH_DISABLED_SPRITE = new ResourceLocation( "myresourcepack", "textures/gui/sprites/widget/disabled.png");
+    private static final ResourceLocation SWITCH_ENABLED_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/enabled_highlighted.png");
+    private static final ResourceLocation SWITCH_ENABLED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/enabled.png");
     private static final int TEXT_COLOR = 0xE0E0E0;
 
     private boolean enabled;
@@ -49,12 +48,9 @@ public class Switch extends AbstractButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
         Minecraft minecraft = Minecraft.getInstance();
-        RenderSystem.enableDepthTest();
         Font font = minecraft.font;
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, this.alpha);
-        RenderSystem.enableBlend();
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(resourceLocation, this.getX(), this.getY(), 60, this.height);
+        this.renderTexture(guiGraphics, resourceLocation, this.getX(), this.getY(), 0, 0, 0, 60, this.height, 60, this.height);
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         guiGraphics.drawString(font, this.getMessage(), this.getX() + 60 + 4, this.getY() + (this.height - 8) / 2, TEXT_COLOR | Mth.ceil(this.alpha * 255.0f) << 24);
     }

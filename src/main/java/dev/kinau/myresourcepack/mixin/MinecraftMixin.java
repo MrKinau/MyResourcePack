@@ -23,7 +23,7 @@ public abstract class MinecraftMixin {
     @Shadow public abstract ToastComponent getToasts();
 
     @Inject(method = "clearResourcePacksOnError", at = @At(value = "HEAD"), cancellable = true)
-    public void onClearResourcePacksOnError(Throwable throwable, @Nullable Component component, @Nullable Minecraft.GameLoadCookie gameLoadCookie, CallbackInfo ci) {
+    public void onClearResourcePacksOnError(Throwable throwable, @Nullable Component component, CallbackInfo ci) {
         String server = MyResourcePack.getInstance().getCurrentServer();
         if (server == null) return;
         ServerSetting setting = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(server);

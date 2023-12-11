@@ -1,6 +1,5 @@
 package dev.kinau.myresourcepack.screen.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.ResourceTab;
 import net.minecraft.client.Minecraft;
@@ -17,14 +16,14 @@ import net.minecraft.util.Mth;
 import java.util.Optional;
 
 public class ResourceActionbox extends AbstractButton {
-    private static final ResourceLocation CHECKBOX_PASS_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_pass_highlighted");
-    private static final ResourceLocation CHECKBOX_PASS_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_pass");
-    private static final ResourceLocation CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_block_highlighted");
-    private static final ResourceLocation CHECKBOX_BLOCK_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_block");
-    private static final ResourceLocation CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_unknown_highlighted");
-    private static final ResourceLocation CHECKBOX_UNKNOWN_SPRITE = new ResourceLocation( "myresourcepack", "widget/checkbox_unknown");
-    private static final ResourceLocation CHECKBOX_MERGE_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_merge_highlighted");
-    private static final ResourceLocation CHECKBOX_MERGE_SPRITE = new ResourceLocation("myresourcepack", "widget/checkbox_merge");
+    private static final ResourceLocation CHECKBOX_PASS_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_pass_highlighted.png");
+    private static final ResourceLocation CHECKBOX_PASS_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_pass.png");
+    private static final ResourceLocation CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_block_highlighted.png");
+    private static final ResourceLocation CHECKBOX_BLOCK_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_block.png");
+    private static final ResourceLocation CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_unknown_highlighted.png");
+    private static final ResourceLocation CHECKBOX_UNKNOWN_SPRITE = new ResourceLocation( "myresourcepack", "textures/gui/sprites/widget/checkbox_unknown.png");
+    private static final ResourceLocation CHECKBOX_MERGE_HIGHLIGHTED_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_merge_highlighted.png");
+    private static final ResourceLocation CHECKBOX_MERGE_SPRITE = new ResourceLocation("myresourcepack", "textures/gui/sprites/widget/checkbox_merge.png");
     private static final int TEXT_COLOR = 0xE0E0E0;
     private ResourceAction action;
     private final ResourceTab resourceTab;
@@ -89,12 +88,9 @@ public class ResourceActionbox extends AbstractButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
         Minecraft minecraft = Minecraft.getInstance();
-        RenderSystem.enableDepthTest();
         Font font = minecraft.font;
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, this.alpha);
-        RenderSystem.enableBlend();
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(resourceLocation, this.getX(), this.getY(), this.width, this.height);
+        this.renderTexture(guiGraphics, resourceLocation, this.getX(), this.getY(), 0, 0, 0, this.width, this.height, this.width, this.height);
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         guiGraphics.drawString(font, this.getMessage(), this.getX() + this.width + 4, this.getY() + (this.height - 8) / 2, TEXT_COLOR | Mth.ceil(this.alpha * 255.0f) << 24);
     }

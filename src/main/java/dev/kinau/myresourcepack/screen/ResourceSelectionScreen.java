@@ -20,6 +20,8 @@ import net.minecraft.network.chat.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static net.minecraft.client.gui.screens.worldselection.CreateWorldScreen.LIGHT_DIRT_BACKGROUND;
+
 public class ResourceSelectionScreen extends Screen {
 
     private final Component OVERRIDDEN_TITLE = Component.translatable("resourceSelectionScreen.tab.overridden.title");
@@ -117,8 +119,8 @@ public class ResourceSelectionScreen extends Screen {
         this.prevAdditionalDirectory = additionalDirectory.clone();
 
         this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(
-                new TreeViewTab(width, height, minecraft, this, ResourceTab.OVERRIDE, OVERRIDDEN_TITLE, overriddenDirectory),
-                new TreeViewTab(width, height, minecraft, this, ResourceTab.ADDITION, ADDITIONAL_TITLE, additionalDirectory)
+                new TreeViewTab(width, height - 28, minecraft, this, ResourceTab.OVERRIDE, OVERRIDDEN_TITLE, overriddenDirectory),
+                new TreeViewTab(width, height - 28, minecraft, this, ResourceTab.ADDITION, ADDITIONAL_TITLE, additionalDirectory)
         ).build();
         this.addRenderableWidget(this.tabNavigationBar);
 
@@ -155,9 +157,15 @@ public class ResourceSelectionScreen extends Screen {
         this.tabManager.setTabArea(screenRectangle);
     }
 
+
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
+    public void renderBackground(GuiGraphics guiGraphics) {
         this.renderDirtBackground(guiGraphics);
+    }
+
+    @Override
+    public void renderDirtBackground(GuiGraphics guiGraphics) {
+        guiGraphics.blit(LIGHT_DIRT_BACKGROUND, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
     }
 
     @Override
@@ -170,6 +178,7 @@ public class ResourceSelectionScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int i, int j, float f) {
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, i, j, f);
     }
 

@@ -127,9 +127,6 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
-        if (!isValidMouseClick(button)) {
-            return false;
-        }
         updateScrollingState(x, y, button);
         if (!isMouseOver(x, y)) {
             return false;

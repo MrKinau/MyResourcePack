@@ -34,8 +34,8 @@ public class TreeViewWidget extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double d, double e, double f, double g) {
-        return treeView.mouseScrolled(d, e, f, g);
+    public boolean mouseScrolled(double d, double e, double f) {
+        return treeView.mouseScrolled(d, e, f);
     }
 
     @Override

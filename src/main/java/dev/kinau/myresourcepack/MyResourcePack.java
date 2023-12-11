@@ -22,9 +22,8 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
+import net.minecraft.network.protocol.game.ServerboundResourcePackPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -83,7 +82,7 @@ public class MyResourcePack implements ModInitializer {
                         try (PackResources packResources = pack.open()) {
                             ResourceDirectory root = new ResourceDirectory(new ResourceLocation("", ""));
                             packResources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
-                                if (packResources instanceof CompositePackResources || packResources instanceof FilePackResources) {
+                                if (packResources instanceof FilePackResources) {
                                     ResourceDirectory directory = ((PackResourceExpander) packResources).myResourcePack$createResourceTree(PackType.CLIENT_RESOURCES, namespace);
                                     root.addChild(directory);
                                 }
