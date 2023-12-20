@@ -135,7 +135,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 			}
 
 			ResourceLocation resourceLocation = ResourceLocation.tryBuild(namespace, pathWithoutNamespace);
-			if (resourceLocation != null) {
+			if (currentDir != null && resourceLocation != null) {
 				VanillaResourceAction action = ResourceBlockingUtils.getDefaultResourceAction(resourceLocation);
 				currentDir.children().add(new ResourceFile(resourceLocation, action.action(), action.overridesVanilla()));
 			}
