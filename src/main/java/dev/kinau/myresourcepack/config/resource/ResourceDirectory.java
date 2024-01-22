@@ -1,11 +1,13 @@
 package dev.kinau.myresourcepack.config.resource;
 
+import dev.kinau.myresourcepack.MyResourcePack;
 import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.ResourceRule;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -38,9 +40,15 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         String addedPath = location().getPath() + "/" + part;
         if (addedPath.startsWith("/"))
             addedPath = addedPath.substring(1);
-        ResourceDirectory addedDir = new ResourceDirectory(new ResourceLocation(location().getNamespace(), addedPath));
-        children.add(addedDir);
-        return addedDir;
+        try {
+            ResourceLocation resourceLocation = new ResourceLocation(location().getNamespace(), addedPath);
+            ResourceDirectory addedDir = new ResourceDirectory(resourceLocation);
+            children.add(addedDir);
+            return addedDir;
+        } catch (ResourceLocationException ex) {
+            MyResourcePack.LOGGER.error("Could not create resource directory for {}", location().getNamespace() + ":" + addedPath);
+        }
+        return null;
     }
 
     public ResourceDirectory merge(ResourceObject object) {
