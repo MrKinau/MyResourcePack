@@ -51,6 +51,8 @@ public class MyResourcePack implements ModInitializer {
     private PackSettings packSettings;
     @Setter
     private boolean reloadResources = false;
+    @Setter
+    private boolean configuringPackOrder = false;
     private ServerData pendingServerData;
     private ClientConfigurationPacketListenerImpl pendingConnection;
 

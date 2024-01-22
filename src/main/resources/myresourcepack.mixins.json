@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CompositePackResourcesMixin",
-    "FilePackResourcesMixin"
+    "FilePackResourcesMixin",
+    "PackMixin",
+    "PackRepositoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -13,6 +15,7 @@
     "ClientCommonPacketListenerImplMixin",
     "MinecraftMixin",
     "OptionsMixin",
-    "PackConfirmScreenMixin"
+    "PackConfirmScreenMixin",
+    "PackSelectionScreenMixin"
   ]
 }

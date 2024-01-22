@@ -7,7 +7,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -17,6 +19,7 @@ import java.util.List;
 public class ServerSetting {
     private String ip;
     private boolean overrideTextures;
+    private Map<String, Integer> packOrder = new HashMap<>();
     private List<ResourceRule> overrideRules = new ArrayList<>();
     private List<ResourceRule> additionRules = new ArrayList<>();
 }

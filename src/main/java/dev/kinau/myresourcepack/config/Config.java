@@ -1,6 +1,7 @@
 package dev.kinau.myresourcepack.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ public class Config {
                 .filter(serverSetting -> serverSetting.ip().equals(server)).findAny();
         if (optSetting.isPresent())
             return optSetting.get();
-        ServerSetting setting = new ServerSetting(server, true, new ArrayList<>(), new ArrayList<>());
+        ServerSetting setting = new ServerSetting(server, true, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
         serverSettings.add(setting);
         return setting;
     }
