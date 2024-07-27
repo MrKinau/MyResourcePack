@@ -1,0 +1,17 @@
+{
+  "override_textures_button": "允許伺服器資源包覆蓋用戶端資源",
+  "ignore_resource_pack": "忽略",
+  "enable_resource_blocking": "我的資源包",
+  "enable_resource_blocking_description": "篩選伺服器資源以封鎖覆蓋",
+  "resourceSelectionScreen.tab.overridden.title": "已覆蓋資源",
+  "resourceSelectionScreen.tab.additional.title": "額外資源",
+  "resourceSelectionScreen.reset": "重設為預設值",
+  "resourceSelectionScreen.action.unknown": "多個設定",
+  "resourceSelectionScreen.override.action.pass": "允許覆蓋",
+  "resourceSelectionScreen.override.action.block": "封鎖覆蓋",
+  "resourceSelectionScreen.override.action.merge": "合併檔案",
+  "resourceSelectionScreen.addition.action.pass": "允許新增",
+  "resourceSelectionScreen.addition.action.block": "封鎖新增",
+  "myResourcePack.notification.disabledDueToError.title": "正在停用我的資源包",
+  "myResourcePack.notification.disabledDueToError.description": "資源重新載入期間發生錯誤"
+}
