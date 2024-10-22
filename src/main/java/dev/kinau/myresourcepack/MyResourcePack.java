@@ -61,7 +61,7 @@ public class MyResourcePack implements ModInitializer {
         instance = this;
         this.packSettings = new PackSettings();
         ClientConfigurationConnectionEvents.INIT.register(this::setPendingConnection);
-        ClientConfigurationConnectionEvents.READY.register(this::resetPendingConnection);
+        ClientConfigurationConnectionEvents.COMPLETE.register(this::resetPendingConnection);
         ClientConfigurationConnectionEvents.DISCONNECT.register(this::resetPendingConnection);
         registerGui();
     }

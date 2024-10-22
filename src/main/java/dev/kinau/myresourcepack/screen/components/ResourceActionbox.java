@@ -1,6 +1,5 @@
 package dev.kinau.myresourcepack.screen.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.ResourceTab;
 import net.minecraft.client.Minecraft;
@@ -10,6 +9,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -89,13 +89,9 @@ public class ResourceActionbox extends AbstractButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
         Minecraft minecraft = Minecraft.getInstance();
-        RenderSystem.enableDepthTest();
         Font font = minecraft.font;
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, this.alpha);
-        RenderSystem.enableBlend();
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(resourceLocation, this.getX(), this.getY(), this.width, this.height);
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        guiGraphics.blitSprite(RenderType::guiTextured, resourceLocation, this.getX(), this.getY(), this.width, this.height);
         guiGraphics.drawString(font, this.getMessage(), this.getX() + this.width + 4, this.getY() + (this.height - 8) / 2, TEXT_COLOR | Mth.ceil(this.alpha * 255.0f) << 24);
     }
 }

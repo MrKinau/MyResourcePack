@@ -53,7 +53,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     }
 
     @Override
-    protected int getRowTop(int i) {
+    public int getRowTop(int i) {
         int prevHeight = 0;
         for (int j = 0; j < i; j++)
             prevHeight += getEntry(j).getHeight();
@@ -61,7 +61,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     }
 
     @Override
-    protected int getRowBottom(int i) {
+    public int getRowBottom(int i) {
         MyResourcePackEntry entry = getEntry(i);
         return getRowTop(i) + entry.getHeight();
     }
