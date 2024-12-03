@@ -24,9 +24,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": ">=1.21.2",
-		"java": ">=21",
-		"fabric-api": "*"
+		"minecraft": ">=1.21.4-rc3",
+		"java": ">=21"
 	},
 	"accessWidener": "myresourcepack.accesswidener",
 	"custom": {
