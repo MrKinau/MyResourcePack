@@ -57,7 +57,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
         int prevHeight = 0;
         for (int j = 0; j < i; j++)
             prevHeight += getEntry(j).getHeight();
-        return this.getY() + 4 - (int) this.getScrollAmount() + prevHeight + this.headerHeight;
+        return this.getY() + 4 - (int) this.scrollAmount() + prevHeight + this.headerHeight;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     }
 
     @Override
-    protected int getMaxPosition() {
+    protected int contentHeight() {
         int prevHeight = 0;
         for (int j = 0; j < getItemCount(); j++)
             prevHeight += getEntry(j).getHeight();
@@ -88,18 +88,18 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
     }
 
     private boolean isScrolling(double x, double y, int button) {
-        return button == 0 && x >= (double)this.getScrollbarPosition() && x < (double)(this.getScrollbarPosition() + 6);
+        return button == 0 && x >= (double)this.scrollBarX() && x < (double)(this.scrollBarX() + 6);
     }
 
     protected final MyResourcePackEntry getMyEntryAtPosition(double x, double y) {
         int i = this.getRowWidth() / 2;
         int k = this.getX() + this.width / 2;
-        if (x >= getScrollbarPosition())
+        if (x >= scrollBarX())
             return null;
         if (x > k + i)
             return null;
 
-        int clickHeight = Mth.floor(y - (double) this.getY()) - this.headerHeight + (int) getScrollAmount() - 7;
+        int clickHeight = Mth.floor(y - (double) this.getY()) - this.headerHeight + (int) scrollAmount() - 7;
 
         int prevHeight = 0;
         for (int j = 0; j < getItemCount(); j++) {
@@ -118,10 +118,10 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
-        if (!isValidMouseClick(button)) {
+        if (!isValidClickButton(button)) {
             return false;
         }
-        updateScrollingState(x, y, button);
+        updateScrolling(x, y, button);
         if (!isMouseOver(x, y)) {
             return false;
         }
@@ -137,18 +137,16 @@ public class ResourceConfigurationTreeView extends ContainerObjectSelectionList<
                 setDragging(true);
                 return true;
             }
-        } else if (this.clickedHeader((int)(x - (double)(this.getX() + this.width / 2 - this.getRowWidth() / 2)), (int)(y - (double)this.getY()) + (int)this.getScrollAmount() - 4)) {
-            return true;
         }
         return isScrolling(x, y, button);
     }
 
     private void scroll(int i) {
-        this.setScrollAmount(this.getScrollAmount() + (double) i);
+        this.setScrollAmount(this.scrollAmount() + (double) i);
     }
 
     @Override
-    protected int getScrollbarPosition() {
+    protected int scrollBarX() {
         return (minecraft.screen.width / 6) * 5;
     }
 }

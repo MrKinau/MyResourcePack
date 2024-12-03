@@ -81,7 +81,7 @@ public class ResourceBlockingUtils {
             }
         }
 
-        if (resourceLocation.getPath().startsWith("shaders/"))
+        if (resourceLocation.getPath().startsWith("shaders/") || resourceLocation.getPath().startsWith("post_effect/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
         if (resourceLocation.getPath().startsWith("atlases/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
@@ -102,9 +102,9 @@ public class ResourceBlockingUtils {
                 return resourceLocation.getPath().equals("include/unifont.zip")
                         ? new VanillaResourceAction(ResourceAction.BLOCK, true)
                         : new VanillaResourceAction(ResourceAction.PASS, true);
-            if (resourceLocation.getPath().startsWith("models/"))
-                return new VanillaResourceAction(ResourceAction.MERGE, true);
             if (resourceLocation.getPath().startsWith("lang/"))
+                return new VanillaResourceAction(ResourceAction.MERGE, true);
+            if (resourceLocation.getPath().startsWith("items/"))
                 return new VanillaResourceAction(ResourceAction.MERGE, true);
             if (resourceLocation.getPath().equals("sounds.json"))
                 return new VanillaResourceAction(ResourceAction.MERGE, true);
@@ -127,6 +127,22 @@ public class ResourceBlockingUtils {
         return null;
     }
 
+    private static ItemModelData getItemModelData(InputStream inputStream) {
+        if (inputStream == null)
+            return null;
+        JsonElement element = JsonParser.parseReader(new JsonReader(new InputStreamReader(inputStream)));
+        if (element.isJsonObject()) {
+            JsonObject rootObj = element.getAsJsonObject();
+            if (rootObj.has("model") && rootObj.get("model").isJsonObject()) {
+                JsonObject model = rootObj.getAsJsonObject("model");
+                if (model.has("type") && model.get("type").isJsonPrimitive() && model.get("type").getAsJsonPrimitive().isString()) {
+                    return new ItemModelData(rootObj, model, model.getAsJsonPrimitive("type").getAsString().replace("minecraft:", ""));
+                }
+            }
+        }
+        return null;
+    }
+
     public static IoSupplier<InputStream> mergeModelData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
         return () -> {
             try {
@@ -140,6 +156,30 @@ public class ResourceBlockingUtils {
                             root.add("textures", vanillaTextures.textures());
                             return new ByteArrayInputStream(root.toString().getBytes(StandardCharsets.UTF_8));
                         }
+                    }
+                }
+                return original.get();
+            } catch (Throwable e) {
+                return original.get();
+            }
+        };
+    }
+
+    public static IoSupplier<InputStream> mergeItemsData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+        return () -> {
+            try {
+                ItemModelData itemData = getItemModelData(original.get());
+                if (itemData != null) {
+                    try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
+                        ItemModelData vanillaItemData = getItemModelData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, resourceLocation).get());
+                        if (itemData.modelType().equals("range_dispatch") || itemData.modelType().equals("select")) {
+                            JsonObject fallback = vanillaItemData.model();
+                            itemData.model().add("fallback", fallback);
+                            itemData.root().add("model", itemData.model());
+                        } else {
+                            itemData.root().add("model", vanillaItemData.model());
+                        }
+                        return new ByteArrayInputStream(itemData.root().toString().getBytes(StandardCharsets.UTF_8));
                     }
                 }
                 return original.get();
@@ -186,10 +226,15 @@ public class ResourceBlockingUtils {
             return mergeJsonData(resourceLocation, original);
         } else if (resourceLocation.getPath().equals("sounds.json")) {
             return mergeJsonData(resourceLocation, original);
+        } else if (resourceLocation.getPath().startsWith("items/") && resourceLocation.getPath().endsWith(".json")) {
+            return mergeItemsData(resourceLocation, original);
         }
         return original;
     }
 
     record ModelTextureData(JsonObject root, JsonObject textures) {
+    }
+
+    record ItemModelData(JsonObject root, JsonObject model, String modelType) {
     }
 }
