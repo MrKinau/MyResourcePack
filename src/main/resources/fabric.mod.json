@@ -23,8 +23,8 @@
 		"myresourcepack.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": ">=1.21.4-rc3",
+		"fabricloader": ">=0.16.9",
+		"minecraft": ">=1.21.4",
 		"java": ">=21"
 	},
 	"accessWidener": "myresourcepack.accesswidener",
