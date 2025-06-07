@@ -1,5 +1,6 @@
 package dev.kinau.myresourcepack;
 
+import com.mojang.brigadier.Command;
 import dev.kinau.myresourcepack.config.ServerSetting;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.expander.ClientCommonPacketListenerImplExpander;
@@ -11,6 +12,8 @@ import dev.kinau.myresourcepack.screen.components.Switch;
 import lombok.Getter;
 import lombok.Setter;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
@@ -42,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+
 @Getter
 public class MyResourcePack implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("myresourcepack");
@@ -53,6 +58,7 @@ public class MyResourcePack implements ModInitializer {
     private boolean reloadResources = false;
     @Setter
     private boolean configuringPackOrder = false;
+    private boolean shouldOpenConfigGui = false;
     private ServerData pendingServerData;
     private ClientConfigurationPacketListenerImpl pendingConnection;
 
@@ -64,11 +70,12 @@ public class MyResourcePack implements ModInitializer {
         ClientConfigurationConnectionEvents.COMPLETE.register(this::resetPendingConnection);
         ClientConfigurationConnectionEvents.DISCONNECT.register(this::resetPendingConnection);
         registerGui();
+        registerCommand();
     }
 
     private void setPendingConnection(ClientConfigurationPacketListenerImpl handler, Minecraft client) {
         this.pendingConnection = handler;
-        this.pendingServerData = ((ClientCommonPacketListenerImplExpander)handler).getServerData();
+        this.pendingServerData = ((ClientCommonPacketListenerImplExpander) handler).getServerData();
     }
 
     private void resetPendingConnection(ClientConfigurationPacketListenerImpl handler, Minecraft client) {
@@ -101,51 +108,36 @@ public class MyResourcePack implements ModInitializer {
                 ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
 
                 List<AbstractWidget> buttons = Screens.getButtons(screen);
-                ConfigButton configButton;
-                buttons.removeIf(abstractWidget -> abstractWidget instanceof ConfigButton);
-                buttons.add(configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !setting.overrideTextures()) {
+
+                ConfigButton configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !setting.overrideTextures()) {
                     @Override
                     public void onPress() {
-                        List<Pack> serverPacks = minecraft.getResourcePackRepository().getSelectedPacks().stream()
-                                .filter(pack -> pack.getPackSource() == PackSource.SERVER)
-                                .toList();
-                        if (serverPacks.isEmpty()) return;
-                        List<ResourceDirectory> packDirectories = new ArrayList<>();
-                        for (Pack pack : serverPacks) {
-                            ResourceDirectory root = new ResourceDirectory(ResourceLocation.fromNamespaceAndPath("", ""));
-                            try (PackResources packResources = pack.open()) {
-                                packResources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
-                                    if (packResources instanceof CompositePackResources || packResources instanceof FilePackResources) {
-                                        ResourceDirectory directory = ((PackResourceExpander) packResources).myResourcePack$createResourceTree(PackType.CLIENT_RESOURCES, namespace);
-                                        root.addChild(directory);
-                                    }
-                                });
-                            }
-                            packDirectories.add(root);
-                        }
-                        ResourceDirectory merged = packDirectories.get(0);
-                        for (int i = 1; i < packDirectories.size(); i++) {
-                            merged = merged.merge(packDirectories.get(i));
-                        }
-                        minecraft.setScreen(new ResourceSelectionScreen(minecraft.screen, merged));
+                        pressConfigButton(minecraft);
                     }
-                });
-                buttons.removeIf(abstractWidget -> abstractWidget instanceof Switch);
+                };
                 Switch switchButton = (Switch) createToggle(minecraft, scaledWidth, setting, scaledHeight - 20 - 6, overrideTextures -> {
                     configButton.active = !overrideTextures;
                 }, true);
-                buttons.add(switchButton);
 
-                buttons.forEach(abstractWidget -> {
-                    if (abstractWidget instanceof Button button) {
-                        if (button.getMessage().getContents() instanceof TranslatableContents translatableContents && translatableContents.getKey().equals("gui.done")) {
-                            button.setX(scaledWidth / 2 - 50);
-                            button.setWidth(Math.max(65, switchButton.getX() - button.getX() - 5));
-                        } else if (button.getMessage().getContents() instanceof TranslatableContents translatableContents && translatableContents.getKey().equals("pack.openFolder")) {
-                            button.setX(scaledWidth / 2 - button.getWidth() - 50 - 5);
+                try {
+                    buttons.removeIf(abstractWidget -> abstractWidget instanceof ConfigButton);
+                    buttons.add(configButton);
+                    buttons.removeIf(abstractWidget -> abstractWidget instanceof Switch);
+                    buttons.add(switchButton);
+
+                    buttons.forEach(abstractWidget -> {
+                        if (abstractWidget instanceof Button button) {
+                            if (button.getMessage().getContents() instanceof TranslatableContents translatableContents && translatableContents.getKey().equals("gui.done")) {
+                                button.setX(scaledWidth / 2 - 50);
+                                button.setWidth(Math.max(65, switchButton.getX() - button.getX() - 5));
+                            } else if (button.getMessage().getContents() instanceof TranslatableContents translatableContents && translatableContents.getKey().equals("pack.openFolder")) {
+                                button.setX(scaledWidth / 2 - button.getWidth() - 50 - 5);
+                            }
                         }
-                    }
-                });
+                    });
+                } catch (IndexOutOfBoundsException ex) {
+                    // Lunarclient fails to add buttons to this screen
+                }
             });
             ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
                 if (!(screen instanceof ClientCommonPacketListenerImpl.PackConfirmScreen confirmScreen)) return;
@@ -192,7 +184,7 @@ public class MyResourcePack implements ModInitializer {
                                         packetListener.send(new ServerboundResourcePackPacket(pendingRequest.id(), ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED));
                                     }
 
-                                    client.setScreen(((PackConfirmScreenExpander)confirmScreen).getParentScreen());
+                                    client.setScreen(((PackConfirmScreenExpander) confirmScreen).getParentScreen());
                                 }).bounds(scaledWidth / 2 - 155, newButtonY, 150, 20).build());
                             });
                 }
@@ -238,6 +230,90 @@ public class MyResourcePack implements ModInitializer {
                     onPress.accept(selected);
                 })
                 .build();
+    }
+
+    private void pressConfigButton(Minecraft minecraft) {
+        List<Pack> serverPacks = minecraft.getResourcePackRepository().getSelectedPacks().stream()
+                .filter(pack -> pack.getPackSource() == PackSource.SERVER)
+                .toList();
+        if (serverPacks.isEmpty()) return;
+        List<ResourceDirectory> packDirectories = new ArrayList<>();
+        for (Pack pack : serverPacks) {
+            ResourceDirectory root = new ResourceDirectory(ResourceLocation.fromNamespaceAndPath("", ""));
+            try (PackResources packResources = pack.open()) {
+                packResources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
+                    if (packResources instanceof CompositePackResources || packResources instanceof FilePackResources) {
+                        ResourceDirectory directory = ((PackResourceExpander) packResources).myResourcePack$createResourceTree(PackType.CLIENT_RESOURCES, namespace);
+                        root.addChild(directory);
+                    }
+                });
+            }
+            packDirectories.add(root);
+        }
+        ResourceDirectory merged = packDirectories.get(0);
+        for (int i = 1; i < packDirectories.size(); i++) {
+            merged = merged.merge(packDirectories.get(i));
+        }
+        minecraft.setScreen(new ResourceSelectionScreen(minecraft.screen, merged));
+    }
+
+    private void registerCommand() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (shouldOpenConfigGui) {
+                this.shouldOpenConfigGui = false;
+                pressConfigButton(client);
+            }
+        });
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(literal("myresourcepack")
+                    .then(literal("enable")
+                            .executes(context -> {
+                                String currentServer = getCurrentServer();
+                                if (currentServer == null) return Command.SINGLE_SUCCESS;
+
+                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+                                setting.overrideTextures(false);
+                                Minecraft.getInstance().reloadResourcePacks();
+                                try {
+                                    packSettings.saveConfig();
+                                    context.getSource().sendFeedback(Component.literal("Successfully enabled resource blocking!"));
+                                } catch (IOException ex) {
+                                    LOGGER.error("Couldn't save config", ex);
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            }))
+                    .then(literal("disable")
+                            .executes(context -> {
+                                String currentServer = getCurrentServer();
+                                if (currentServer == null) return Command.SINGLE_SUCCESS;
+
+                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+                                setting.overrideTextures(true);
+                                Minecraft.getInstance().reloadResourcePacks();
+                                try {
+                                    packSettings.saveConfig();
+                                    context.getSource().sendFeedback(Component.literal("Successfully disabled resource blocking!"));
+                                } catch (IOException ex) {
+                                    LOGGER.error("Couldn't save config", ex);
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            }))
+                    .then(literal("settings")
+                            .executes(context -> {
+                                String currentServer = getCurrentServer();
+                                if (currentServer == null) return Command.SINGLE_SUCCESS;
+
+                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+                                if (setting.overrideTextures()) {
+                                    context.getSource().sendFeedback(Component.literal("You need to enable resource blocking first: /myresourcepack enable!"));
+                                    return Command.SINGLE_SUCCESS;
+                                }
+
+                                this.shouldOpenConfigGui = true;
+
+                                return Command.SINGLE_SUCCESS;
+                            })));
+        });
     }
 
 }

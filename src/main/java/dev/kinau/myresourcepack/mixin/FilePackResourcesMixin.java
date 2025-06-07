@@ -29,7 +29,7 @@ import java.util.zip.ZipFile;
 @Mixin(FilePackResources.class)
 public abstract class FilePackResourcesMixin implements PackResourceExpander {
 
-	private static String getPathFromLocation(PackType packType, ResourceLocation resourceLocation) {
+	private static String myResourcePack$getPathFromLocation(PackType packType, ResourceLocation resourceLocation) {
 		return String.format(Locale.ROOT, "%s/%s/%s", packType.getDirectory(), resourceLocation.getNamespace(), resourceLocation.getPath());
 	}
 
@@ -53,7 +53,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 						cir.setReturnValue(null);
 						return;
 					}
-					ZipEntry zipEntry = zipFile.getEntry(this.addPrefix(getPathFromLocation(packType, resourceLocation)));
+					ZipEntry zipEntry = zipFile.getEntry(this.addPrefix(myResourcePack$getPathFromLocation(packType, resourceLocation)));
 					if (zipEntry == null) {
 						cir.setReturnValue(null);
 						return;
