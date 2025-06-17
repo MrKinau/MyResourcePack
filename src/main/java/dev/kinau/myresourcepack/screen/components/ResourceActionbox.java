@@ -9,9 +9,10 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 import java.util.Optional;
@@ -91,7 +92,7 @@ public class ResourceActionbox extends AbstractButton {
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(RenderType::guiTextured, resourceLocation, this.getX(), this.getY(), this.width, this.height);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, resourceLocation, this.getX(), this.getY(), this.width, this.height, ARGB.white(this.alpha));
         guiGraphics.drawString(font, this.getMessage(), this.getX() + this.width + 4, this.getY() + (this.height - 8) / 2, TEXT_COLOR | Mth.ceil(this.alpha * 255.0f) << 24);
     }
 }

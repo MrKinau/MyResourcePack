@@ -6,9 +6,10 @@ import lombok.experimental.Accessors;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 @Getter
 @Setter
@@ -37,6 +38,6 @@ public abstract class ConfigButton extends AbstractButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
         ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(RenderType::guiTextured, resourceLocation, this.getX(), this.getY(), this.width, this.height);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, resourceLocation, this.getX(), this.getY(), this.width, this.height, ARGB.white(this.alpha));
     }
 }

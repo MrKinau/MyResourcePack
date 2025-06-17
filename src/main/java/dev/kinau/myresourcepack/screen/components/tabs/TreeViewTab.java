@@ -38,6 +38,11 @@ public class TreeViewTab implements Tab {
     }
 
     @Override
+    public Component getTabExtraNarration() {
+        return Component.empty();
+    }
+
+    @Override
     public void visitChildren(Consumer<AbstractWidget> consumer) {
         widgets.forEach(consumer);
     }
