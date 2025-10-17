@@ -1,4 +1,4 @@
-package dev.kinau.myresourcepack.screen.components;
+package dev.kinau.myresourcepack.screen.components.buttons;
 
 import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.ResourceTab;
@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +41,7 @@ public class ResourceActionbox extends AbstractButton {
     }
 
     @Override
-    public void onPress() {
+    public void onPress(InputWithModifiers inputWithModifiers) {
         if (action == null)
             action(ResourceAction.BLOCK);
         int index = (action.ordinal() + 1) % ResourceAction.values().length;
@@ -79,11 +80,11 @@ public class ResourceActionbox extends AbstractButton {
 
     private ResourceLocation getResource() {
         if (action == null)
-            return isHovered() ? CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE : CHECKBOX_UNKNOWN_SPRITE;
+            return isHoveredOrFocused() ? CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE : CHECKBOX_UNKNOWN_SPRITE;
         return switch (action) {
-            case PASS -> isHovered() ? CHECKBOX_PASS_HIGHLIGHTED_SPRITE : CHECKBOX_PASS_SPRITE;
-            case MERGE -> isHovered() ? CHECKBOX_MERGE_HIGHLIGHTED_SPRITE : CHECKBOX_MERGE_SPRITE;
-            default -> isHovered() ? CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE : CHECKBOX_BLOCK_SPRITE;
+            case PASS -> isHoveredOrFocused() ? CHECKBOX_PASS_HIGHLIGHTED_SPRITE : CHECKBOX_PASS_SPRITE;
+            case MERGE -> isHoveredOrFocused() ? CHECKBOX_MERGE_HIGHLIGHTED_SPRITE : CHECKBOX_MERGE_SPRITE;
+            default -> isHoveredOrFocused() ? CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE : CHECKBOX_BLOCK_SPRITE;
         };
     }
 

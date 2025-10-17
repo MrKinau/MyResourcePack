@@ -35,6 +35,6 @@ public abstract class MinecraftMixin {
     public void onAddResourcePackLoadFailToast(@Nullable Component description, CallbackInfo ci) {
         if (failedWithActiveBlocking)
             SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, Component.translatable("myResourcePack.notification.disabledDueToError.title"), Component.translatable("myResourcePack.notification.disabledDueToError.description"));
-        failedWithActiveBlocking = false;
+        this.failedWithActiveBlocking = false;
     }
 }

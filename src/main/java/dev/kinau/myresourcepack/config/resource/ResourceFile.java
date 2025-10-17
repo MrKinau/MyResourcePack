@@ -6,7 +6,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -30,6 +34,16 @@ public class ResourceFile extends ResourceObject implements Cloneable {
     @Override
     protected void printTree(int tabIndex) {
         System.out.println("\t".repeat(tabIndex) + location().toString());
+    }
+
+    @Override
+    public Component getLabel(ResourceDirectory parent) {
+        String renderedText = location().toString().substring(Optional.ofNullable(parent)
+                .map(dir -> dir.location().toString().length())
+                .orElse(0));
+        if (renderedText.startsWith("/"))
+            renderedText = renderedText.substring(1);
+        return Component.literal(renderedText).withStyle(ChatFormatting.WHITE);
     }
 
     @Override

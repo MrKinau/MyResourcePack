@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 @AllArgsConstructor
@@ -22,6 +23,8 @@ public abstract class ResourceObject implements Cloneable {
     }
 
     protected abstract void printTree(int tabIndex);
+
+    public abstract Component getLabel(ResourceDirectory parent);
 
     public abstract ResourceAction action();
     public ResourceAction actionForRule() {

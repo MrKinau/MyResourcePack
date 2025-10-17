@@ -1,4 +1,4 @@
-package dev.kinau.myresourcepack.screen.components;
+package dev.kinau.myresourcepack.screen.components.buttons;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +33,7 @@ public class Switch extends AbstractButton {
     }
 
     @Override
-    public void onPress() {
+    public void onPress(InputWithModifiers inputWithModifiers) {
         this.enabled = !enabled;
     }
 
@@ -43,8 +44,8 @@ public class Switch extends AbstractButton {
 
     private ResourceLocation getResource() {
         if (enabled)
-            return isHovered() ? SWITCH_ENABLED_HIGHLIGHTED_SPRITE : SWITCH_ENABLED_SPRITE;
-        return isHovered() ? SWITCH_DISABLED_HIGHLIGHTED_SPRITE : SWITCH_DISABLED_SPRITE;
+            return isHoveredOrFocused() ? SWITCH_ENABLED_HIGHLIGHTED_SPRITE : SWITCH_ENABLED_SPRITE;
+        return isHoveredOrFocused() ? SWITCH_DISABLED_HIGHLIGHTED_SPRITE : SWITCH_DISABLED_SPRITE;
     }
 
     @Override

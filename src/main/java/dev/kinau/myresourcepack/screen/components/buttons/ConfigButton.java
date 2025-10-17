@@ -1,4 +1,4 @@
-package dev.kinau.myresourcepack.screen.components;
+package dev.kinau.myresourcepack.screen.components.buttons;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +31,7 @@ public abstract class ConfigButton extends AbstractButton {
 
     private ResourceLocation getResource() {
         if (isActive())
-            return isHovered() ? CONFIG_HIGHLIGHTED_SPRITE : CONFIG_SPRITE;
+            return isHoveredOrFocused() ? CONFIG_HIGHLIGHTED_SPRITE : CONFIG_SPRITE;
         return CONFIG_DISABLED_SPRITE;
     }
 

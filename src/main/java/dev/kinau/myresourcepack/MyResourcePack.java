@@ -1,14 +1,14 @@
 package dev.kinau.myresourcepack;
 
-import com.mojang.brigadier.Command;
+import dev.kinau.myresourcepack.command.MyResourcePackCommand;
 import dev.kinau.myresourcepack.config.ServerSetting;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.expander.ClientCommonPacketListenerImplExpander;
 import dev.kinau.myresourcepack.expander.PackConfirmScreenExpander;
 import dev.kinau.myresourcepack.expander.PackResourceExpander;
 import dev.kinau.myresourcepack.screen.ResourceSelectionScreen;
-import dev.kinau.myresourcepack.screen.components.ConfigButton;
-import dev.kinau.myresourcepack.screen.components.Switch;
+import dev.kinau.myresourcepack.screen.components.buttons.ConfigButton;
+import dev.kinau.myresourcepack.screen.components.buttons.Switch;
 import lombok.Getter;
 import lombok.Setter;
 import net.fabricmc.api.ModInitializer;
@@ -23,6 +23,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerData;
@@ -45,8 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
-
 @Getter
 public class MyResourcePack implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("myresourcepack");
@@ -58,6 +57,7 @@ public class MyResourcePack implements ModInitializer {
     private boolean reloadResources = false;
     @Setter
     private boolean configuringPackOrder = false;
+    @Setter
     private boolean shouldOpenConfigGui = false;
     private ServerData pendingServerData;
     private ClientConfigurationPacketListenerImpl pendingConnection;
@@ -111,7 +111,7 @@ public class MyResourcePack implements ModInitializer {
 
                 ConfigButton configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !setting.overrideTextures()) {
                     @Override
-                    public void onPress() {
+                    public void onPress(InputWithModifiers inputWithModifiers) {
                         pressConfigButton(minecraft);
                     }
                 };
@@ -216,8 +216,8 @@ public class MyResourcePack implements ModInitializer {
         return reloadResources
                 ? new Switch(scaledWidth - width - 24 - 5, y, width, height, component, !setting.overrideTextures()) {
             @Override
-            public void onPress() {
-                super.onPress();
+            public void onPress(InputWithModifiers inputWithModifiers) {
+                super.onPress(inputWithModifiers);
                 callBack.accept(!enabled());
                 onPress.accept(!enabled());
             }
@@ -264,56 +264,7 @@ public class MyResourcePack implements ModInitializer {
                 pressConfigButton(client);
             }
         });
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            dispatcher.register(literal("myresourcepack")
-                    .then(literal("enable")
-                            .executes(context -> {
-                                String currentServer = getCurrentServer();
-                                if (currentServer == null) return Command.SINGLE_SUCCESS;
-
-                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
-                                setting.overrideTextures(false);
-                                Minecraft.getInstance().reloadResourcePacks();
-                                try {
-                                    packSettings.saveConfig();
-                                    context.getSource().sendFeedback(Component.literal("Successfully enabled resource blocking!"));
-                                } catch (IOException ex) {
-                                    LOGGER.error("Couldn't save config", ex);
-                                }
-                                return Command.SINGLE_SUCCESS;
-                            }))
-                    .then(literal("disable")
-                            .executes(context -> {
-                                String currentServer = getCurrentServer();
-                                if (currentServer == null) return Command.SINGLE_SUCCESS;
-
-                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
-                                setting.overrideTextures(true);
-                                Minecraft.getInstance().reloadResourcePacks();
-                                try {
-                                    packSettings.saveConfig();
-                                    context.getSource().sendFeedback(Component.literal("Successfully disabled resource blocking!"));
-                                } catch (IOException ex) {
-                                    LOGGER.error("Couldn't save config", ex);
-                                }
-                                return Command.SINGLE_SUCCESS;
-                            }))
-                    .then(literal("settings")
-                            .executes(context -> {
-                                String currentServer = getCurrentServer();
-                                if (currentServer == null) return Command.SINGLE_SUCCESS;
-
-                                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
-                                if (setting.overrideTextures()) {
-                                    context.getSource().sendFeedback(Component.literal("You need to enable resource blocking first: /myresourcepack enable!"));
-                                    return Command.SINGLE_SUCCESS;
-                                }
-
-                                this.shouldOpenConfigGui = true;
-
-                                return Command.SINGLE_SUCCESS;
-                            })));
-        });
+        ClientCommandRegistrationCallback.EVENT.register(new MyResourcePackCommand(this));
     }
 
 }

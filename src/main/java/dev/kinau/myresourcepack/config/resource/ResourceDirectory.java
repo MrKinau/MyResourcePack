@@ -7,8 +7,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.ChatFormatting;
 import net.minecraft.ResourceLocationException;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,6 +165,16 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         children().forEach(resourceObject -> resourceObject.printTree(tabIndex + 1));
     }
 
+    @Override
+    public Component getLabel(@Nullable ResourceDirectory parent) {
+        String renderedText = location().toString().substring(Optional.ofNullable(parent)
+                .map(dir -> dir.location().toString().length())
+                .orElse(0));
+        if (renderedText.startsWith("/"))
+            renderedText = renderedText.substring(1);
+        return Component.literal(renderedText).withStyle(ChatFormatting.GRAY);
+    }
+
     public void addChild(ResourceObject object) {
         children().add(object);
     }
@@ -259,4 +272,5 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         clone.children().addAll(children().stream().map(ResourceObject::clone).toList());
         return clone;
     }
+
 }
