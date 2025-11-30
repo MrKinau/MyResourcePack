@@ -12,21 +12,21 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 import java.util.Optional;
 
 public class ResourceActionbox extends AbstractButton {
-    private static final ResourceLocation CHECKBOX_PASS_HIGHLIGHTED_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_pass_highlighted");
-    private static final ResourceLocation CHECKBOX_PASS_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_pass");
-    private static final ResourceLocation CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_block_highlighted");
-    private static final ResourceLocation CHECKBOX_BLOCK_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_block");
-    private static final ResourceLocation CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_unknown_highlighted");
-    private static final ResourceLocation CHECKBOX_UNKNOWN_SPRITE = ResourceLocation.fromNamespaceAndPath( "myresourcepack", "widget/checkbox_unknown");
-    private static final ResourceLocation CHECKBOX_MERGE_HIGHLIGHTED_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_merge_highlighted");
-    private static final ResourceLocation CHECKBOX_MERGE_SPRITE = ResourceLocation.fromNamespaceAndPath("myresourcepack", "widget/checkbox_merge");
+    private static final Identifier CHECKBOX_PASS_HIGHLIGHTED_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_pass_highlighted");
+    private static final Identifier CHECKBOX_PASS_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_pass");
+    private static final Identifier CHECKBOX_BLOCK_HIGHLIGHTED_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_block_highlighted");
+    private static final Identifier CHECKBOX_BLOCK_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_block");
+    private static final Identifier CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_unknown_highlighted");
+    private static final Identifier CHECKBOX_UNKNOWN_SPRITE = Identifier.fromNamespaceAndPath( "myresourcepack", "widget/checkbox_unknown");
+    private static final Identifier CHECKBOX_MERGE_HIGHLIGHTED_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_merge_highlighted");
+    private static final Identifier CHECKBOX_MERGE_SPRITE = Identifier.fromNamespaceAndPath("myresourcepack", "widget/checkbox_merge");
     private static final int TEXT_COLOR = 0xE0E0E0;
     private ResourceAction action;
     private final ResourceTab resourceTab;
@@ -78,7 +78,7 @@ public class ResourceActionbox extends AbstractButton {
         }
     }
 
-    private ResourceLocation getResource() {
+    private Identifier getResource() {
         if (action == null)
             return isHoveredOrFocused() ? CHECKBOX_UNKNOWN_HIGHLIGHTED_SPRITE : CHECKBOX_UNKNOWN_SPRITE;
         return switch (action) {
@@ -89,11 +89,11 @@ public class ResourceActionbox extends AbstractButton {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
+    protected void renderContents(GuiGraphics guiGraphics, int i, int j, float f) {
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
-        ResourceLocation resourceLocation = getResource();
-        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, resourceLocation, this.getX(), this.getY(), this.width, this.height, ARGB.white(this.alpha));
+        Identifier resource = getResource();
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, resource, this.getX(), this.getY(), this.width, this.height, ARGB.white(this.alpha));
         guiGraphics.drawString(font, this.getMessage(), this.getX() + this.width + 4, this.getY() + (this.height - 8) / 2, TEXT_COLOR | Mth.ceil(this.alpha * 255.0f) << 24);
     }
 }

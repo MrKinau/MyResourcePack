@@ -8,9 +8,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.ChatFormatting;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
     private final List<ResourceObject> children = new ArrayList<>();
     private ResourceAction ruleAction;
 
-    public ResourceDirectory(ResourceLocation location) {
-        super(location);
+    public ResourceDirectory(Identifier identifier) {
+        super(identifier);
     }
 
     public ResourceDirectory getOrCreateDir(String part) {
@@ -44,11 +44,11 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         if (addedPath.startsWith("/"))
             addedPath = addedPath.substring(1);
         try {
-            ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(location().getNamespace(), addedPath);
-            ResourceDirectory addedDir = new ResourceDirectory(resourceLocation);
+            Identifier identifier = Identifier.fromNamespaceAndPath(location().getNamespace(), addedPath);
+            ResourceDirectory addedDir = new ResourceDirectory(identifier);
             children.add(addedDir);
             return addedDir;
-        } catch (ResourceLocationException ex) {
+        } catch (IdentifierException ex) {
             MyResourcePack.LOGGER.error("Could not create resource directory for {}", location().getNamespace() + ":" + addedPath);
         }
         return null;
@@ -77,12 +77,12 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         return this;
     }
 
-    public Optional<ResourceFile> findFile(ResourceLocation location) {
+    public Optional<ResourceFile> findFile(Identifier identifier) {
         for (ResourceObject child : children()) {
-            if (child instanceof ResourceFile file && file.location().toString().equals(location.toString()))
+            if (child instanceof ResourceFile file && file.location().toString().equals(identifier.toString()))
                 return Optional.of(file);
             else if (child instanceof ResourceDirectory dir) {
-                Optional<ResourceFile> optFile = dir.findFile(location);
+                Optional<ResourceFile> optFile = dir.findFile(identifier);
                 if (optFile.isPresent())
                     return optFile;
             }
@@ -90,14 +90,14 @@ public class ResourceDirectory extends ResourceObject implements Cloneable {
         return Optional.empty();
     }
 
-    public Optional<ResourceDirectory> findDirectory(ResourceLocation location) {
-        if (location().toString().equals(location.toString()))
+    public Optional<ResourceDirectory> findDirectory(Identifier identifier) {
+        if (location().toString().equals(identifier.toString()))
             return Optional.of(this);
         for (ResourceObject child : children()) {
             if (child instanceof ResourceDirectory dir) {
-                if (dir.location().toString().equals(location.toString()))
+                if (dir.location().toString().equals(identifier.toString()))
                     return Optional.of(dir);
-                Optional<ResourceDirectory> optDir = dir.findDirectory(location);
+                Optional<ResourceDirectory> optDir = dir.findDirectory(identifier);
                 if (optDir.isPresent())
                     return optDir;
             }

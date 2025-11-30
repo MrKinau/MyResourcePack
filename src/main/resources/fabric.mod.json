@@ -23,8 +23,8 @@
 		"myresourcepack.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": ">=1.21.9",
+		"fabricloader": ">=0.18.1",
+		"minecraft": ">=1.21.11-beta.3",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

@@ -30,7 +30,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackResources;
@@ -239,7 +239,7 @@ public class MyResourcePack implements ModInitializer {
         if (serverPacks.isEmpty()) return;
         List<ResourceDirectory> packDirectories = new ArrayList<>();
         for (Pack pack : serverPacks) {
-            ResourceDirectory root = new ResourceDirectory(ResourceLocation.fromNamespaceAndPath("", ""));
+            ResourceDirectory root = new ResourceDirectory(Identifier.fromNamespaceAndPath("", ""));
             try (PackResources packResources = pack.open()) {
                 packResources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
                     if (packResources instanceof CompositePackResources || packResources instanceof FilePackResources) {

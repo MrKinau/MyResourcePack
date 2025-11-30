@@ -10,7 +10,7 @@ import dev.kinau.myresourcepack.config.ResourceRule;
 import dev.kinau.myresourcepack.config.ServerSetting;
 import dev.kinau.myresourcepack.config.VanillaResourceAction;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
@@ -31,9 +31,9 @@ public class ResourceBlockingUtils {
         return !MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer).overrideTextures();
     }
 
-    public static boolean supportsMerging(ResourceLocation resourceLocation) {
-        if (resourceLocation == null) return false;
-        return resourceLocation.getPath().endsWith(".json");
+    public static boolean supportsMerging(Identifier identifier) {
+        if (identifier == null) return false;
+        return identifier.getPath().endsWith(".json");
     }
 
     public static Optional<ServerSetting> getServerSetting() {
@@ -42,15 +42,15 @@ public class ResourceBlockingUtils {
         return Optional.of(MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer));
     }
 
-    public static ResourceAction getConfiguredResourceAction(ResourceLocation resourceLocation) {
+    public static ResourceAction getConfiguredResourceAction(Identifier identifier) {
         Optional<ServerSetting> optSettings = getServerSetting();
         if (optSettings.isEmpty()) return ResourceAction.PASS;
         ServerSetting setting = optSettings.get();
         if (setting.overrideTextures()) return ResourceAction.PASS;
 
-        String path = resourceLocation.toString();
+        String path = identifier.toString();
 
-        VanillaResourceAction resourceAction = getDefaultResourceAction(resourceLocation);
+        VanillaResourceAction resourceAction = getDefaultResourceAction(identifier);
         List<ResourceRule> rules = resourceAction.overridesVanilla()
                 ? setting.overrideRules()
                 : setting.additionRules();
@@ -64,15 +64,15 @@ public class ResourceBlockingUtils {
         return resourceAction.action();
     }
 
-    public static VanillaResourceAction getDefaultResourceAction(ResourceLocation resourceLocation) {
-        if (!resourceLocation.getNamespace().equals("minecraft"))
+    public static VanillaResourceAction getDefaultResourceAction(Identifier identifier) {
+        if (!identifier.getNamespace().equals("minecraft"))
             return new VanillaResourceAction(ResourceAction.PASS, false);
 
         boolean overridesVanilla = true;
         try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-            if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, resourceLocation) == null) {
-                if (resourceLocation.getPath().endsWith(PackResources.METADATA_EXTENSION)) {
-                    ResourceLocation baseLoc = ResourceLocation.tryBuild(resourceLocation.getNamespace(), resourceLocation.getPath().substring(0, resourceLocation.getPath().length() - PackResources.METADATA_EXTENSION.length()));
+            if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier) == null) {
+                if (identifier.getPath().endsWith(PackResources.METADATA_EXTENSION)) {
+                    Identifier baseLoc = Identifier.tryBuild(identifier.getNamespace(), identifier.getPath().substring(0, identifier.getPath().length() - PackResources.METADATA_EXTENSION.length()));
                     if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, baseLoc) == null)
                         overridesVanilla = false;
                 } else {
@@ -81,15 +81,15 @@ public class ResourceBlockingUtils {
             }
         }
 
-        if (resourceLocation.getPath().startsWith("shaders/") || resourceLocation.getPath().startsWith("post_effect/"))
+        if (identifier.getPath().startsWith("shaders/") || identifier.getPath().startsWith("post_effect/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
-        if (resourceLocation.getPath().startsWith("atlases/"))
+        if (identifier.getPath().startsWith("atlases/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
-        if (resourceLocation.getPath().startsWith("blockstates/"))
+        if (identifier.getPath().startsWith("blockstates/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
-        if (resourceLocation.getPath().startsWith("textures/gui/sprites/boss_bar/"))
+        if (identifier.getPath().startsWith("textures/gui/sprites/boss_bar/"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
-        if (resourceLocation.getPath().startsWith("textures/misc/pumpkinblur.png"))
+        if (identifier.getPath().startsWith("textures/misc/pumpkinblur.png"))
             return new VanillaResourceAction(ResourceAction.PASS, overridesVanilla);
 
         if (overridesVanilla) {
@@ -98,15 +98,15 @@ public class ResourceBlockingUtils {
             // adding them to a new font, too many servers do this and blocking all characters
             // might end in UIs not showing up. This does not override the default minecraft font
             // (at least not the ascii, nonlatin_european and accented glyph providers).
-            if (resourceLocation.getPath().startsWith("font/"))
-                return resourceLocation.getPath().equals("include/unifont.zip")
+            if (identifier.getPath().startsWith("font/"))
+                return identifier.getPath().equals("include/unifont.zip")
                         ? new VanillaResourceAction(ResourceAction.BLOCK, true)
                         : new VanillaResourceAction(ResourceAction.PASS, true);
-            if (resourceLocation.getPath().startsWith("lang/"))
+            if (identifier.getPath().startsWith("lang/"))
                 return new VanillaResourceAction(ResourceAction.MERGE, true);
-            if (resourceLocation.getPath().startsWith("items/"))
+            if (identifier.getPath().startsWith("items/"))
                 return new VanillaResourceAction(ResourceAction.MERGE, true);
-            if (resourceLocation.getPath().equals("sounds.json"))
+            if (identifier.getPath().equals("sounds.json"))
                 return new VanillaResourceAction(ResourceAction.MERGE, true);
         }
 
@@ -143,13 +143,13 @@ public class ResourceBlockingUtils {
         return null;
     }
 
-    public static IoSupplier<InputStream> mergeModelData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    public static IoSupplier<InputStream> mergeModelData(Identifier identifier, IoSupplier<InputStream> original) {
         return () -> {
             try {
                 ModelTextureData textures = getModelTextures(original.get());
                 if (textures != null) {
                     try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        ModelTextureData vanillaTextures = getModelTextures(vanillaResource.getResource(PackType.CLIENT_RESOURCES, resourceLocation).get());
+                        ModelTextureData vanillaTextures = getModelTextures(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
                         if (!textures.textures().equals(vanillaTextures.textures())) {
                             JsonObject root = textures.root();
                             GsonTools.extendJsonObject(vanillaTextures.textures(), GsonTools.ConflictStrategy.PREFER_FIRST_OBJ, textures.textures());
@@ -165,13 +165,13 @@ public class ResourceBlockingUtils {
         };
     }
 
-    public static IoSupplier<InputStream> mergeItemsData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    public static IoSupplier<InputStream> mergeItemsData(Identifier identifier, IoSupplier<InputStream> original) {
         return () -> {
             try {
                 ItemModelData itemData = getItemModelData(original.get());
                 if (itemData != null) {
                     try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        ItemModelData vanillaItemData = getItemModelData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, resourceLocation).get());
+                        ItemModelData vanillaItemData = getItemModelData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
                         if (itemData.modelType().equals("range_dispatch") || itemData.modelType().equals("select")) {
                             JsonObject fallback = vanillaItemData.model();
                             itemData.model().add("fallback", fallback);
@@ -199,13 +199,13 @@ public class ResourceBlockingUtils {
         return null;
     }
 
-    private static IoSupplier<InputStream> mergeJsonData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
+    private static IoSupplier<InputStream> mergeJsonData(Identifier identifier, IoSupplier<InputStream> original) {
         return () -> {
             try {
                 JsonObject jsonData = getJsonData(original.get());
                 if (jsonData != null) {
                     try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        JsonObject vanillaJsonData = getJsonData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, resourceLocation).get());
+                        JsonObject vanillaJsonData = getJsonData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
                         if (vanillaJsonData != null) {
                             GsonTools.extendJsonObject(jsonData, GsonTools.ConflictStrategy.PREFER_SECOND_OBJ, vanillaJsonData);
                             return new ByteArrayInputStream(jsonData.toString().getBytes(StandardCharsets.UTF_8));
@@ -219,15 +219,15 @@ public class ResourceBlockingUtils {
         };
     }
 
-    public static IoSupplier<InputStream> mergeData(ResourceLocation resourceLocation, IoSupplier<InputStream> original) {
-        if (resourceLocation.getPath().startsWith("models/") && resourceLocation.getPath().endsWith(".json")) {
-            return mergeModelData(resourceLocation, original);
-        } else if (resourceLocation.getPath().startsWith("lang/") && resourceLocation.getPath().endsWith(".json")) {
-            return mergeJsonData(resourceLocation, original);
-        } else if (resourceLocation.getPath().equals("sounds.json")) {
-            return mergeJsonData(resourceLocation, original);
-        } else if (resourceLocation.getPath().startsWith("items/") && resourceLocation.getPath().endsWith(".json")) {
-            return mergeItemsData(resourceLocation, original);
+    public static IoSupplier<InputStream> mergeData(Identifier identifier, IoSupplier<InputStream> original) {
+        if (identifier.getPath().startsWith("models/") && identifier.getPath().endsWith(".json")) {
+            return mergeModelData(identifier, original);
+        } else if (identifier.getPath().startsWith("lang/") && identifier.getPath().endsWith(".json")) {
+            return mergeJsonData(identifier, original);
+        } else if (identifier.getPath().equals("sounds.json")) {
+            return mergeJsonData(identifier, original);
+        } else if (identifier.getPath().startsWith("items/") && identifier.getPath().endsWith(".json")) {
+            return mergeItemsData(identifier, original);
         }
         return original;
     }

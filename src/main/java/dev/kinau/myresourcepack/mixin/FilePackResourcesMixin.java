@@ -6,7 +6,7 @@ import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.config.resource.ResourceFile;
 import dev.kinau.myresourcepack.expander.PackResourceExpander;
 import dev.kinau.myresourcepack.utils.ResourceBlockingUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -29,8 +29,8 @@ import java.util.zip.ZipFile;
 @Mixin(FilePackResources.class)
 public abstract class FilePackResourcesMixin implements PackResourceExpander {
 
-	private static String myResourcePack$getPathFromLocation(PackType packType, ResourceLocation resourceLocation) {
-		return String.format(Locale.ROOT, "%s/%s/%s", packType.getDirectory(), resourceLocation.getNamespace(), resourceLocation.getPath());
+	private static String myResourcePack$getPathFromLocation(PackType packType, Identifier identifier) {
+		return String.format(Locale.ROOT, "%s/%s/%s", packType.getDirectory(), identifier.getNamespace(), identifier.getPath());
 	}
 
 	@Shadow
@@ -41,11 +41,11 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 	protected abstract String addPrefix(String string);
 
 	@Inject(method = "getResource*", at = @At("HEAD"), cancellable = true)
-	private void onGetResource(PackType packType, ResourceLocation resourceLocation, CallbackInfoReturnable<IoSupplier<InputStream>> cir) {
+	private void onGetResource(PackType packType, Identifier identifier, CallbackInfoReturnable<IoSupplier<InputStream>> cir) {
 		if (!ResourceBlockingUtils.isBlockingEnabled()) return;
 		if (((FilePackResources)(Object)this).packId().startsWith("server/") && packType == PackType.CLIENT_RESOURCES) {
 //			long start = System.currentTimeMillis();
-			ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(resourceLocation);
+			ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(identifier);
 			if (action != ResourceAction.PASS) {
 				if (action == ResourceAction.MERGE) {
 					ZipFile zipFile = this.zipFileAccess.getOrCreateZipFile();
@@ -53,12 +53,12 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 						cir.setReturnValue(null);
 						return;
 					}
-					ZipEntry zipEntry = zipFile.getEntry(this.addPrefix(myResourcePack$getPathFromLocation(packType, resourceLocation)));
+					ZipEntry zipEntry = zipFile.getEntry(this.addPrefix(myResourcePack$getPathFromLocation(packType, identifier)));
 					if (zipEntry == null) {
 						cir.setReturnValue(null);
 						return;
 					}
-					cir.setReturnValue(ResourceBlockingUtils.mergeData(resourceLocation, IoSupplier.create(zipFile, zipEntry)));
+					cir.setReturnValue(ResourceBlockingUtils.mergeData(identifier, IoSupplier.create(zipFile, zipEntry)));
 //					System.out.println(resourceLocation.toString() + " took " + (System.currentTimeMillis() - start) + "ms");
 					return;
 				}
@@ -89,17 +89,17 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 					ZipEntry zipEntry = enumeration.nextElement();
 					if (zipEntry.isDirectory() || !(string5 = zipEntry.getName()).startsWith(string4)) continue;
 					String string6 = string5.substring(string3.length());
-					ResourceLocation resourceLocation = ResourceLocation.tryBuild(namespace, string6);
-					if (resourceLocation != null) {
+					Identifier identifier = Identifier.tryBuild(namespace, string6);
+					if (identifier != null) {
 						Optional<IoSupplier<InputStream>> resource = Optional.empty();
-						ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(resourceLocation);
+						ResourceAction action = ResourceBlockingUtils.getConfiguredResourceAction(identifier);
 						if (action != ResourceAction.PASS) {
 							if (action == ResourceAction.MERGE)
-								resource = Optional.of(ResourceBlockingUtils.mergeData(resourceLocation, IoSupplier.create(zipFile, zipEntry)));
+								resource = Optional.of(ResourceBlockingUtils.mergeData(identifier, IoSupplier.create(zipFile, zipEntry)));
 							else
 								continue;
 						}
-						resourceOutput.accept(resourceLocation, resource.orElse(IoSupplier.create(zipFile, zipEntry)));
+						resourceOutput.accept(identifier, resource.orElse(IoSupplier.create(zipFile, zipEntry)));
 					}
 				}
 			} catch (Exception ex) {
@@ -113,7 +113,7 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 	@Override
 	public ResourceDirectory myResourcePack$createResourceTree(PackType packType, String namespace) {
 		ZipFile zipFile = this.zipFileAccess.getOrCreateZipFile();
-		ResourceDirectory root = new ResourceDirectory(ResourceLocation.fromNamespaceAndPath(namespace, ""));
+		ResourceDirectory root = new ResourceDirectory(Identifier.fromNamespaceAndPath(namespace, ""));
 		if (zipFile == null) {
 			return root;
 		}
@@ -134,10 +134,10 @@ public abstract class FilePackResourcesMixin implements PackResourceExpander {
 				currentDir = currentDir.getOrCreateDir(parts[i]);
 			}
 
-			ResourceLocation resourceLocation = ResourceLocation.tryBuild(namespace, pathWithoutNamespace);
-			if (currentDir != null && resourceLocation != null) {
-				VanillaResourceAction action = ResourceBlockingUtils.getDefaultResourceAction(resourceLocation);
-				currentDir.children().add(new ResourceFile(resourceLocation, action.action(), action.overridesVanilla()));
+			Identifier identifier = Identifier.tryBuild(namespace, pathWithoutNamespace);
+			if (currentDir != null && identifier != null) {
+				VanillaResourceAction action = ResourceBlockingUtils.getDefaultResourceAction(identifier);
+				currentDir.children().add(new ResourceFile(identifier, action.action(), action.overridesVanilla()));
 			}
 		}
 		return root;

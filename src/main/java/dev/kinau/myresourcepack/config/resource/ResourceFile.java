@@ -8,7 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
@@ -21,7 +21,7 @@ public class ResourceFile extends ResourceObject implements Cloneable {
     private ResourceAction action;
     private final boolean overridesVanilla;
 
-    public ResourceFile(ResourceLocation location, ResourceAction action, boolean overridesVanilla) {
+    public ResourceFile(Identifier location, ResourceAction action, boolean overridesVanilla) {
         super(location);
         this.action = action;
         this.overridesVanilla = overridesVanilla;

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @AllArgsConstructor
 @Getter
@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 public abstract class ResourceObject implements Cloneable {
 
     @Setter
-    private ResourceLocation location;
+    private Identifier location;
 
     public void printTree() {
         printTree(0);

@@ -3,7 +3,7 @@ package dev.kinau.myresourcepack.mixin;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.config.resource.ResourceObject;
 import dev.kinau.myresourcepack.expander.PackResourceExpander;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -22,7 +22,7 @@ public abstract class CompositePackResourcesMixin implements PackResourceExpande
 
 	@Override
 	public ResourceDirectory myResourcePack$createResourceTree(PackType packType, String namespace) {
-		ResourceDirectory resourceDirectory = new ResourceDirectory(ResourceLocation.fromNamespaceAndPath(namespace, ""));
+		ResourceDirectory resourceDirectory = new ResourceDirectory(Identifier.fromNamespaceAndPath(namespace, ""));
 		for (PackResources packResources : packResourcesStack) {
 			if (packResources instanceof PackResourceExpander) {
 				ResourceDirectory childDir = ((PackResourceExpander) packResources).myResourcePack$createResourceTree(packType, namespace);
