@@ -14,7 +14,7 @@ public class Config {
                 .filter(serverSetting -> serverSetting.ip().equals(server)).findAny();
         if (optSetting.isPresent())
             return optSetting.get();
-        ServerSetting setting = new ServerSetting(server, true, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+        ServerSetting setting = new ServerSetting(server, false, true, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
         serverSettings.add(setting);
         return setting;
     }

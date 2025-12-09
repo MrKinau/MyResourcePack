@@ -18,6 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class ServerSetting {
     private String ip;
+    private boolean ignoreAllPacks;
     private boolean overrideTextures;
     private Map<String, Integer> packOrder = new HashMap<>();
     private List<ResourceRule> overrideRules = new ArrayList<>();

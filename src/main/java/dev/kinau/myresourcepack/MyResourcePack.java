@@ -156,8 +156,7 @@ public class MyResourcePack implements ModInitializer {
 
                 int y = screen.children().get(0).getRectangle().position().y() - 30;
 
-                AbstractButton checkbox = createToggle(client, scaledWidth, setting, y, a -> {
-                }, false);
+                AbstractButton checkbox = createToggle(client, scaledWidth, setting, y, a -> {}, false);
                 buttons.add(checkbox);
 
                 if (required) {
@@ -176,7 +175,7 @@ public class MyResourcePack implements ModInitializer {
                                     if (!(confirmScreen instanceof PackConfirmScreenExpander packScreen)) return;
 
                                     // not changing this may cause issues, but this is just meant to be a temporary ignore feature
-//                                    minecraft.getCurrentServer().setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
+//                                    Minecraft.getInstance().getCurrentServer().setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
 
                                     for (ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest pendingRequest : packScreen.getRequests()) {
                                         packetListener.send(new ServerboundResourcePackPacket(pendingRequest.id(), ServerboundResourcePackPacket.Action.ACCEPTED));
