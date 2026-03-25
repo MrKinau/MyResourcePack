@@ -38,6 +38,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,9 +98,9 @@ public class MyResourcePack implements ModInitializer {
 
     private void registerGui() {
         try {
-            ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenEvents.AFTER_INIT.register((_, screen, scaledWidth, scaledHeight) -> {
                 if (!(screen instanceof PackSelectionScreen)) return;
-                Minecraft minecraft = Screens.getClient(screen);
+                Minecraft minecraft = Screens.getMinecraft(screen);
                 boolean hasServerPack = minecraft.getResourcePackRepository().getSelectedPacks().stream().anyMatch(pack -> pack.getPackSource() == PackSource.SERVER);
                 if (!hasServerPack) return;
                 String currentServer = getCurrentServer();
@@ -107,11 +108,11 @@ public class MyResourcePack implements ModInitializer {
 
                 ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
 
-                List<AbstractWidget> buttons = Screens.getButtons(screen);
+                List<AbstractWidget> buttons = Screens.getWidgets(screen);
 
                 ConfigButton configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !setting.overrideTextures()) {
                     @Override
-                    public void onPress(InputWithModifiers inputWithModifiers) {
+                    public void onPress(@NonNull InputWithModifiers inputWithModifiers) {
                         pressConfigButton(minecraft);
                     }
                 };
@@ -139,7 +140,7 @@ public class MyResourcePack implements ModInitializer {
                     // Lunarclient fails to add buttons to this screen
                 }
             });
-            ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, _) -> {
                 if (!(screen instanceof ClientCommonPacketListenerImpl.PackConfirmScreen confirmScreen)) return;
                 boolean required = confirmScreen.getTitle().getContents() instanceof TranslatableContents translatableContents
                         && translatableContents.getKey().startsWith("multiplayer.requiredTexturePrompt.line");
@@ -149,14 +150,14 @@ public class MyResourcePack implements ModInitializer {
 
                 ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
 
-                List<AbstractWidget> buttons = Screens.getButtons(screen);
+                List<AbstractWidget> buttons = Screens.getWidgets(screen);
                 buttons.forEach(abstractWidget -> {
                     abstractWidget.setPosition(abstractWidget.getX(), abstractWidget.getY() + 15);
                 });
 
-                int y = screen.children().get(0).getRectangle().position().y() - 30;
+                int y = screen.children().getFirst().getRectangle().position().y() - 30;
 
-                AbstractButton checkbox = createToggle(client, scaledWidth, setting, y, a -> {}, false);
+                AbstractButton checkbox = createToggle(client, scaledWidth, setting, y, _ -> {}, false);
                 buttons.add(checkbox);
 
                 if (required) {
@@ -166,7 +167,7 @@ public class MyResourcePack implements ModInitializer {
                             .findAny()
                             .ifPresent(proceedButton -> {
                                 int newButtonY = proceedButton.getY() + proceedButton.getHeight() + 8;
-                                buttons.add(Button.builder(Component.translatable("ignore_resource_pack"), button -> {
+                                buttons.add(Button.builder(Component.translatable("ignore_resource_pack"), _ -> {
                                     ClientCommonPacketListenerImpl packetListener = client.getConnection();
                                     if (packetListener == null) {
                                         packetListener = pendingConnection;
@@ -224,7 +225,7 @@ public class MyResourcePack implements ModInitializer {
                 : Checkbox.builder(component, minecraft.font)
                 .pos(scaledWidth / 2 - (width / 2), y)
                 .selected(setting.overrideTextures())
-                .onValueChange((checkbox, selected) -> {
+                .onValueChange((_, selected) -> {
                     callBack.accept(selected);
                     onPress.accept(selected);
                 })
@@ -249,7 +250,7 @@ public class MyResourcePack implements ModInitializer {
             }
             packDirectories.add(root);
         }
-        ResourceDirectory merged = packDirectories.get(0);
+        ResourceDirectory merged = packDirectories.getFirst();
         for (int i = 1; i < packDirectories.size(); i++) {
             merged = merged.merge(packDirectories.get(i));
         }

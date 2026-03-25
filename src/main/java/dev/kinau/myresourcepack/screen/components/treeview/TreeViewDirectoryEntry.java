@@ -3,10 +3,11 @@ package dev.kinau.myresourcepack.screen.components.treeview;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.screen.components.buttons.ExpandButton;
 import dev.kinau.myresourcepack.screen.components.buttons.ResourceActionbox;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.InputWithModifiers;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,14 +95,14 @@ public class TreeViewDirectoryEntry extends TreeViewEntry {
     }
 
     @Override
-    protected void renderElementContent(GuiGraphics graphics, int x, int y, int ox, int oy, boolean hovered, float alpha) {
+    protected void renderElementContent(@NonNull GuiGraphicsExtractor graphics, int x, int y, int ox, int oy, boolean hovered, float alpha) {
         expandButton.setX(x + getRenderDepth());
         expandButton.setY(y);
-        expandButton.render(graphics, ox, oy, alpha);
+        expandButton.extractRenderState(graphics, ox, oy, alpha);
 
         actionbox.setX(x + getRenderDepth() + 20);
         actionbox.setY(y);
-        actionbox.render(graphics, ox, oy, alpha);
+        actionbox.extractRenderState(graphics, ox, oy, alpha);
 
         if (expanded) {
             y += 20;

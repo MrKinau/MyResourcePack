@@ -7,7 +7,7 @@ import dev.kinau.myresourcepack.config.resource.ResourceFile;
 import dev.kinau.myresourcepack.screen.components.tab.TreeViewTab;
 import dev.kinau.myresourcepack.screen.components.treeview.TreeView;
 import dev.kinau.myresourcepack.utils.ResourceBlockingUtils;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
@@ -20,6 +20,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -164,7 +165,7 @@ public class ResourceSelectionScreen extends Screen {
     @Override
     public void repositionElements() {
         if (tabNavigationBar != null) {
-            tabNavigationBar.setWidth(width);
+            tabNavigationBar.updateWidth(width);
             tabNavigationBar.arrangeElements();
             int var0 = tabNavigationBar.getRectangle().bottom();
             ScreenRectangle var1 = new ScreenRectangle(0, var0, width, height - layout.getFooterHeight() - var0);
@@ -175,14 +176,14 @@ public class ResourceSelectionScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int x, int y, float gameTime) {
-        super.render(graphics, x, y, gameTime);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
         graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
     }
 
     @Override
-    protected void renderMenuBackground(GuiGraphics param0) {
-        param0.blit(RenderPipelines.GUI_TEXTURED, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
-        this.renderMenuBackground(param0, 0, this.layout.getHeaderHeight(), this.width, this.height);
+    protected void extractMenuBackground(@NonNull GuiGraphicsExtractor graphics) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+        this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
     }
 }

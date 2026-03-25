@@ -4,9 +4,10 @@ import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.config.resource.ResourceFile;
 import dev.kinau.myresourcepack.screen.components.buttons.ResourceActionbox;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.InputWithModifiers;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 public class TreeViewFileEntry extends TreeViewEntry {
 
@@ -35,9 +36,9 @@ public class TreeViewFileEntry extends TreeViewEntry {
     }
 
     @Override
-    protected void renderElementContent(GuiGraphics graphics, int x, int y, int ox, int oy, boolean hovered, float alpha) {
+    protected void renderElementContent(@NonNull GuiGraphicsExtractor graphics, int x, int y, int ox, int oy, boolean hovered, float alpha) {
         actionbox.setX(x + getRenderDepth());
         actionbox.setY(y);
-        actionbox.render(graphics, ox, oy, alpha);
+        actionbox.extractRenderState(graphics, ox, oy, alpha);
     }
 }

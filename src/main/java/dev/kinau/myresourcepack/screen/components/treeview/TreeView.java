@@ -6,10 +6,11 @@ import dev.kinau.myresourcepack.config.resource.ResourceFile;
 import dev.kinau.myresourcepack.config.resource.ResourceObject;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 public class TreeView extends ContainerObjectSelectionList<TreeViewEntry> {
@@ -49,10 +50,8 @@ public class TreeView extends ContainerObjectSelectionList<TreeViewEntry> {
     }
 
     @Override
-    protected void renderListBackground(GuiGraphics param0) {
-    }
+    protected void extractListBackground(@NonNull GuiGraphicsExtractor graphics) {}
 
     @Override
-    protected void renderListSeparators(GuiGraphics param0) {
-    }
+    protected void extractListSeparators(@NonNull GuiGraphicsExtractor graphics) {}
 }

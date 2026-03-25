@@ -1,13 +1,14 @@
 package dev.kinau.myresourcepack.screen.components.treeview;
 
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,12 +78,12 @@ public abstract class TreeViewEntry extends ContainerObjectSelectionList.Entry<T
         return children;
     }
 
-    protected abstract void renderElementContent(GuiGraphics graphics, int x, int y, int ox, int oy, boolean hovered, float alpha);
+    protected abstract void renderElementContent(@NonNull GuiGraphicsExtractor graphics, int x, int y, int ox, int oy, boolean hovered, float alpha);
 
     @Override
-    public void renderContent(GuiGraphics guiGraphics, int ox, int oy, boolean oHovered, float oAlpha) {
+    public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
         int x = getContentX();
         int y = getContentY();
-        renderElementContent(guiGraphics, x, y, ox, oy, oHovered, oAlpha);
+        renderElementContent(graphics, x, y, mouseX, mouseY, hovered, a);
     }
 }
