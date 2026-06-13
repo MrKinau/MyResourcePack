@@ -13,5 +13,6 @@
   "resourceSelectionScreen.addition.action.pass": "Allow Addition",
   "resourceSelectionScreen.addition.action.block": "Block Addition",
   "myResourcePack.notification.disabledDueToError.title": "Disabling My Resourcepack",
-  "myResourcePack.notification.disabledDueToError.description": "Error during resource reloading"
+  "myResourcePack.notification.disabledDueToError.description": "Error during resource reloading",
+  "manageServer.resourcePack.ignored": "Ignored"
 }

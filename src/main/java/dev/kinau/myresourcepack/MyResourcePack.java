@@ -6,6 +6,7 @@ import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.expander.ClientCommonPacketListenerImplExpander;
 import dev.kinau.myresourcepack.expander.PackConfirmScreenExpander;
 import dev.kinau.myresourcepack.expander.PackResourceExpander;
+import dev.kinau.myresourcepack.expander.ServerDataExpander;
 import dev.kinau.myresourcepack.screen.ResourceSelectionScreen;
 import dev.kinau.myresourcepack.screen.components.buttons.ConfigButton;
 import dev.kinau.myresourcepack.screen.components.buttons.Switch;
@@ -27,6 +28,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
@@ -151,6 +153,8 @@ public class MyResourcePack implements ModInitializer {
                 ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
 
                 List<AbstractWidget> buttons = Screens.getWidgets(screen);
+                buttons.removeIf(abstractWidget -> (abstractWidget instanceof Checkbox checkbox && checkbox.getMessage().getContents() instanceof TranslatableContents cbContents && cbContents.getKey().equals("override_textures_button")) ||
+                        (abstractWidget instanceof Button button && button.getMessage().getContents() instanceof TranslatableContents buttonContents && buttonContents.getKey().equals("ignore_resource_pack")));
                 buttons.forEach(abstractWidget -> {
                     abstractWidget.setPosition(abstractWidget.getX(), abstractWidget.getY() + 15);
                 });
@@ -175,8 +179,12 @@ public class MyResourcePack implements ModInitializer {
                                     }
                                     if (!(confirmScreen instanceof PackConfirmScreenExpander packScreen)) return;
 
-                                    // not changing this may cause issues, but this is just meant to be a temporary ignore feature
-//                                    Minecraft.getInstance().getCurrentServer().setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
+                                    ServerData serverData = getPendingServerData();
+                                    if (serverData instanceof ServerDataExpander serverDataExpander) {
+                                        serverData.setResourcePackStatus(ServerDataExpander.MappedPackStatus.IGNORED.getMappedStatus());
+                                        serverDataExpander.myResourcePack$setPackStatus(ServerDataExpander.MappedPackStatus.IGNORED);
+                                        ServerList.saveSingleServer(serverData);
+                                    }
 
                                     for (ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest pendingRequest : packScreen.getRequests()) {
                                         packetListener.send(new ServerboundResourcePackPacket(pendingRequest.id(), ServerboundResourcePackPacket.Action.ACCEPTED));
@@ -184,8 +192,8 @@ public class MyResourcePack implements ModInitializer {
                                         packetListener.send(new ServerboundResourcePackPacket(pendingRequest.id(), ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED));
                                     }
 
-                                    client.setScreen(((PackConfirmScreenExpander) confirmScreen).getParentScreen());
-                                }).bounds(scaledWidth / 2 - 155, newButtonY, 150, 20).build());
+                                    client.setScreen(packScreen.getParentScreen());
+                                }).bounds(proceedButton.getX(), newButtonY, proceedButton.getWidth(), proceedButton.getHeight()).build());
                             });
                 }
             });

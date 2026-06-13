@@ -13,9 +13,12 @@
   },
   "client": [
     "ClientCommonPacketListenerImplMixin",
+    "ManageServerScreenMixin",
     "MinecraftMixin",
     "OptionsMixin",
     "PackConfirmScreenMixin",
-    "PackSelectionScreenMixin"
+    "PackSelectionScreenMixin",
+    "ServerDataMixin",
+    "ServerPackManagerMixin"
   ]
 }

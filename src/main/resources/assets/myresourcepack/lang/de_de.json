@@ -13,5 +13,6 @@
   "resourceSelectionScreen.addition.action.pass": "Hinzufügen erlauben",
   "resourceSelectionScreen.addition.action.block": "Hinzufügen blockieren",
   "myResourcePack.notification.disabledDueToError.title": "Deaktiviere My Resource Pack",
-  "myResourcePack.notification.disabledDueToError.description": "Fehler während des Ressourcen-Neuladen"
+  "myResourcePack.notification.disabledDueToError.description": "Fehler während des Ressourcen-Neuladen",
+  "manageServer.resourcePack.ignored": "Ignoriert"
 }
