@@ -86,7 +86,7 @@ public class MyResourcePack implements ModInitializer {
 
     public String getCurrentServer() {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.isSingleplayer()) return null;
+        if (minecraft.hasSingleplayerServer()) return null;
         ServerData serverData = minecraft.getCurrentServer();
         if (serverData == null) {
             if (pendingServerData == null)
@@ -184,7 +184,7 @@ public class MyResourcePack implements ModInitializer {
                                         packetListener.send(new ServerboundResourcePackPacket(pendingRequest.id(), ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED));
                                     }
 
-                                    client.setScreen(((PackConfirmScreenExpander) confirmScreen).getParentScreen());
+                                    client.gui.setScreen(((PackConfirmScreenExpander) confirmScreen).getParentScreen());
                                 }).bounds(scaledWidth / 2 - 155, newButtonY, 150, 20).build());
                             });
                 }
@@ -254,7 +254,7 @@ public class MyResourcePack implements ModInitializer {
         for (int i = 1; i < packDirectories.size(); i++) {
             merged = merged.merge(packDirectories.get(i));
         }
-        minecraft.setScreen(new ResourceSelectionScreen(minecraft.screen, merged));
+        minecraft.gui.setScreen(new ResourceSelectionScreen(minecraft.gui.screen(), merged));
     }
 
     private void registerCommand() {

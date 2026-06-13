@@ -9,8 +9,8 @@ import dev.kinau.myresourcepack.screen.components.treeview.TreeView;
 import dev.kinau.myresourcepack.utils.ResourceBlockingUtils;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -39,7 +39,7 @@ public class ResourceSelectionScreen extends Screen {
     private final TabManager tabManager = new TabManager(this::addRenderableWidget, this::removeWidget);
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     @Nullable
-    private TabNavigationBar tabNavigationBar;
+    private MenuTabBar tabNavigationBar;
 
     public ResourceSelectionScreen(Screen lastScreen, ResourceDirectory rootDirectory) {
         super(Component.translatable("enable_resource_blocking"));
@@ -49,7 +49,7 @@ public class ResourceSelectionScreen extends Screen {
 
     private void closeScreen() {
         if (minecraft == null) return;
-        minecraft.setScreen(lastScreen);
+        minecraft.gui.setScreen(lastScreen);
     }
 
     private TreeViewTab createTab(ResourceTab tab, ResourceDirectory rootDirectory) {
@@ -79,6 +79,7 @@ public class ResourceSelectionScreen extends Screen {
 
     private void reloadAndClose() {
         if (minecraft != null) {
+            MyResourcePack.getInstance().setReloadResources(false);
             minecraft.reloadResourcePacks().thenAccept(unused -> {
                 closeScreen();
             });
@@ -129,7 +130,7 @@ public class ResourceSelectionScreen extends Screen {
         additionalDirectory.flattenSort();
         this.prevAdditionalDirectory = additionalDirectory.clone();
 
-        this.tabNavigationBar = TabNavigationBar.builder(tabManager, width)
+        this.tabNavigationBar = MenuTabBar.builder(tabManager, width)
                 .addTabs(
                         createTab(ResourceTab.OVERRIDE, overriddenDirectory),
                         createTab(ResourceTab.ADDITION, additionalDirectory)
@@ -165,8 +166,7 @@ public class ResourceSelectionScreen extends Screen {
     @Override
     public void repositionElements() {
         if (tabNavigationBar != null) {
-            tabNavigationBar.updateWidth(width);
-            tabNavigationBar.arrangeElements();
+            tabNavigationBar.arrangeElements(width);
             int var0 = tabNavigationBar.getRectangle().bottom();
             ScreenRectangle var1 = new ScreenRectangle(0, var0, width, height - layout.getFooterHeight() - var0);
             tabManager.setTabArea(var1);
