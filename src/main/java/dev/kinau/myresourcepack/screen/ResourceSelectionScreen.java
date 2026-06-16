@@ -22,7 +22,6 @@ import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ResourceSelectionScreen extends Screen {
@@ -93,11 +92,7 @@ public class ResourceSelectionScreen extends Screen {
             ResourceBlockingUtils.getServerSetting().ifPresent(serverSetting -> {
                 serverSetting.overrideRules(rootDirectory.createRules(overriddenDirectory));
                 serverSetting.additionRules(rootDirectory.createRules(additionalDirectory));
-                try {
-                    MyResourcePack.getInstance().getPackSettings().saveConfig();
-                } catch (IOException e) {
-                    MyResourcePack.LOGGER.error("Could not save config", e);
-                }
+                MyResourcePack.getInstance().getPackSettings().saveConfigPrintError();
             });
             reloadAndClose();
             return;
@@ -142,11 +137,7 @@ public class ResourceSelectionScreen extends Screen {
             ResourceBlockingUtils.getServerSetting().ifPresent(serverSetting -> {
                 serverSetting.overrideRules(new ArrayList<>());
                 serverSetting.additionRules(new ArrayList<>());
-                try {
-                    MyResourcePack.getInstance().getPackSettings().saveConfig();
-                } catch (IOException e) {
-                    MyResourcePack.LOGGER.error("Could not save config", e);
-                }
+                MyResourcePack.getInstance().getPackSettings().saveConfigPrintError();
             });
             reloadAndClose();
         }).build());

@@ -2,7 +2,8 @@ package dev.kinau.myresourcepack.mixin;
 
 import com.google.common.hash.HashCode;
 import dev.kinau.myresourcepack.MyResourcePack;
-import dev.kinau.myresourcepack.expander.ServerDataExpander;
+import dev.kinau.myresourcepack.config.Config;
+import dev.kinau.myresourcepack.config.ServerSettings;
 import net.minecraft.client.resources.server.PackLoadFeedback;
 import net.minecraft.client.resources.server.ServerPackManager;
 import org.jspecify.annotations.Nullable;
@@ -29,9 +30,13 @@ public class ServerPackManagerMixin {
     @Inject(method = "pushPack", at = @At("HEAD"), cancellable = true)
     private void onPushPack(UUID id, URL url, @Nullable HashCode hash, CallbackInfo ci) {
         if (packPromptStatus != ServerPackManager.PackPromptStatus.ALLOWED) return;
-        if (!(MyResourcePack.getInstance().getPendingServerData() instanceof ServerDataExpander serverDataExpander)) return;
-        if (serverDataExpander.myResourcePack$getPackStatus() == null) return;
-        if (!serverDataExpander.myResourcePack$getPackStatus().getInternalName().equals(ServerDataExpander.MappedPackStatus.IGNORED.getInternalName())) return;
+        String currentServer = MyResourcePack.getInstance().getCurrentServer();
+        if (currentServer == null) return;
+        Config config = MyResourcePack.getInstance().getPackSettings().getConfigData();
+        if (config == null) return;
+        ServerSettings settings = config.getSettings(currentServer, false);
+        if (settings == null) return;
+        if (!settings.ignoreAllPacks()) return;
         ci.cancel();
         packLoadFeedback.reportUpdate(id, PackLoadFeedback.Update.ACCEPTED);
         packLoadFeedback.reportUpdate(id, PackLoadFeedback.Update.DOWNLOADED);

@@ -1,7 +1,7 @@
 package dev.kinau.myresourcepack.mixin;
 
 import dev.kinau.myresourcepack.MyResourcePack;
-import dev.kinau.myresourcepack.config.ServerSetting;
+import dev.kinau.myresourcepack.config.ServerSettings;
 import net.minecraft.client.GameLoadCookie;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -23,7 +23,7 @@ public abstract class MinecraftMixin {
     public void onClearResourcePacksOnError(Throwable t, @Nullable Component message, @Nullable GameLoadCookie loadCookie, CallbackInfo ci) {
         String server = MyResourcePack.getInstance().getCurrentServer();
         if (server == null) return;
-        ServerSetting setting = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(server);
+        ServerSettings setting = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(server, false);
         if (setting == null || setting.overrideTextures()) return;
         setting.overrideTextures(true);
         this.failedWithActiveBlocking = true;

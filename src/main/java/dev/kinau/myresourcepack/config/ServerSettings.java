@@ -16,7 +16,7 @@ import java.util.Map;
 @Accessors(fluent = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServerSetting {
+public class ServerSettings {
     private String ip;
     private boolean ignoreAllPacks;
     private boolean overrideTextures;
