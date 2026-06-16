@@ -1,7 +1,7 @@
 package dev.kinau.myresourcepack.mixin;
 
 import dev.kinau.myresourcepack.MyResourcePack;
-import dev.kinau.myresourcepack.config.ServerSetting;
+import dev.kinau.myresourcepack.config.ServerSettings;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +26,10 @@ public class PackRepositoryMixin {
         // save new pack order
         if (MyResourcePack.getInstance().isConfiguringPackOrder()) {
             MyResourcePack.getInstance().setConfiguringPackOrder(false);
+
+            ServerSettings settings = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(MyResourcePack.getInstance().getCurrentServer(), false);
+            if (settings == null) return;
+
             for (int i = 0; i < packs.size(); i++) {
                 Pack pack = packs.get(i);
                 if (pack.getPackSource() != PackSource.SERVER) continue;
@@ -47,19 +50,14 @@ public class PackRepositoryMixin {
                     }
                 }
 
-                ServerSetting setting = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(MyResourcePack.getInstance().getCurrentServer());
                 if (onlyServerPacksAbove)
-                    setting.packOrder().remove(getServerPackId(pack));
+                    settings.packOrder().remove(getServerPackId(pack));
                 else if (onlyServerPacksBelow)
-                    setting.packOrder().put(getServerPackId(pack), 0);
+                    settings.packOrder().put(getServerPackId(pack), 0);
                 else
-                    setting.packOrder().put(getServerPackId(pack), i);
+                    settings.packOrder().put(getServerPackId(pack), i);
             }
-            try {
-                MyResourcePack.getInstance().getPackSettings().saveConfig();
-            } catch (IOException e) {
-                MyResourcePack.LOGGER.error("Could not save config", e);
-            }
+            MyResourcePack.getInstance().getPackSettings().saveConfigPrintError();
             return;
         }
 
@@ -69,8 +67,9 @@ public class PackRepositoryMixin {
 
     private List<Pack> reorderPacks(List<Pack> packs) {
         List<Pack> reorderedList = new ArrayList<>(packs);
-        ServerSetting setting = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(MyResourcePack.getInstance().getCurrentServer());
-        setting.packOrder().forEach((packId, orderIndex) -> {
+        ServerSettings settings = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(MyResourcePack.getInstance().getCurrentServer(), false);
+        if (settings == null) return reorderedList;
+        settings.packOrder().forEach((packId, orderIndex) -> {
             reorderedList.stream().filter(pack -> getServerPackId(pack).equals(packId)).findAny().ifPresent(pack -> {
                 reorderedList.remove(pack);
                 reorderedList.add(Math.min(orderIndex, reorderedList.size()), pack);

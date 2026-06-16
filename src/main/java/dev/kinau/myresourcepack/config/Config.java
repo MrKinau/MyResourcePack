@@ -7,14 +7,19 @@ import java.util.Optional;
 
 public class Config {
 
-    private List<ServerSetting> serverSettings = new ArrayList<>();
+    private List<ServerSettings> serverSettings = new ArrayList<>();
 
-    public ServerSetting getSettings(String server) {
-        Optional<ServerSetting> optSetting = serverSettings.stream()
+    public ServerSettings getSettings(String server) {
+        return getSettings(server, true);
+    }
+
+    public ServerSettings getSettings(String server, boolean createIfMissing) {
+        Optional<ServerSettings> optSetting = serverSettings.stream()
                 .filter(serverSetting -> serverSetting.ip().equals(server)).findAny();
         if (optSetting.isPresent())
             return optSetting.get();
-        ServerSetting setting = new ServerSetting(server, false, true, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+        if (!createIfMissing) return null;
+        ServerSettings setting = new ServerSettings(server, false, true, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
         serverSettings.add(setting);
         return setting;
     }

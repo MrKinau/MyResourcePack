@@ -39,6 +39,16 @@ public class PackSettings {
         }
     }
 
+    public boolean saveConfigPrintError() {
+        try {
+            saveConfig();
+            return true;
+        } catch (IOException ex) {
+            MyResourcePack.LOGGER.error("Could not save config", ex);
+        }
+        return false;
+    }
+
     public void saveConfig() throws IOException {
         if (configData == null) return;
         String data = GSON.toJson(configData);

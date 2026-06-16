@@ -1,7 +1,7 @@
 package dev.kinau.myresourcepack;
 
 import dev.kinau.myresourcepack.command.MyResourcePackCommand;
-import dev.kinau.myresourcepack.config.ServerSetting;
+import dev.kinau.myresourcepack.config.ServerSettings;
 import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.expander.ClientCommonPacketListenerImplExpander;
 import dev.kinau.myresourcepack.expander.PackConfirmScreenExpander;
@@ -44,7 +44,6 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -86,15 +85,17 @@ public class MyResourcePack implements ModInitializer {
         this.pendingServerData = null;
     }
 
-    public String getCurrentServer() {
+    public ServerData getCurrentServerData() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.isSingleplayer()) return null;
         ServerData serverData = minecraft.getCurrentServer();
-        if (serverData == null) {
-            if (pendingServerData == null)
-                return null;
-            return pendingServerData.ip;
-        }
+        if (serverData == null) return pendingServerData;
+        return serverData;
+    }
+
+    public String getCurrentServer() {
+        ServerData serverData = getCurrentServerData();
+        if (serverData == null) return null;
         return serverData.ip;
     }
 
@@ -108,17 +109,17 @@ public class MyResourcePack implements ModInitializer {
                 String currentServer = getCurrentServer();
                 if (currentServer == null) return;
 
-                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+                ServerSettings settings = packSettings.getConfigData().getSettings(currentServer);
 
                 List<AbstractWidget> buttons = Screens.getWidgets(screen);
 
-                ConfigButton configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !setting.overrideTextures()) {
+                ConfigButton configButton = new ConfigButton(scaledWidth - 20 - 5, scaledHeight - 20 - 6, 20, 20, !settings.overrideTextures()) {
                     @Override
                     public void onPress(@NonNull InputWithModifiers inputWithModifiers) {
                         pressConfigButton(minecraft);
                     }
                 };
-                Switch switchButton = (Switch) createToggle(minecraft, scaledWidth, setting, scaledHeight - 20 - 6, overrideTextures -> {
+                Switch switchButton = (Switch) createToggle(minecraft, scaledWidth, settings, scaledHeight - 20 - 6, overrideTextures -> {
                     configButton.active = !overrideTextures;
                 }, true);
 
@@ -150,7 +151,7 @@ public class MyResourcePack implements ModInitializer {
                 String currentServer = getCurrentServer();
                 if (currentServer == null) return;
 
-                ServerSetting setting = packSettings.getConfigData().getSettings(currentServer);
+                ServerSettings settings = packSettings.getConfigData().getSettings(currentServer);
 
                 List<AbstractWidget> buttons = Screens.getWidgets(screen);
                 buttons.removeIf(abstractWidget -> (abstractWidget instanceof Checkbox checkbox && checkbox.getMessage().getContents() instanceof TranslatableContents cbContents && cbContents.getKey().equals("override_textures_button")) ||
@@ -161,7 +162,7 @@ public class MyResourcePack implements ModInitializer {
 
                 int y = screen.children().getFirst().getRectangle().position().y() - 30;
 
-                AbstractButton checkbox = createToggle(client, scaledWidth, setting, y, _ -> {}, false);
+                AbstractButton checkbox = createToggle(client, scaledWidth, settings, y, _ -> {}, false);
                 buttons.add(checkbox);
 
                 if (required) {
@@ -203,15 +204,11 @@ public class MyResourcePack implements ModInitializer {
     }
 
     @NotNull
-    private AbstractButton createToggle(Minecraft minecraft, int scaledWidth, ServerSetting setting, int y, Consumer<Boolean> callBack, boolean reloadResources) {
+    private AbstractButton createToggle(Minecraft minecraft, int scaledWidth, ServerSettings settings, int y, Consumer<Boolean> callBack, boolean reloadResources) {
         int height = 20;
         Consumer<Boolean> onPress = (pressed) -> {
-            setting.overrideTextures(pressed);
-            try {
-                packSettings.saveConfig();
-            } catch (IOException ex) {
-                LOGGER.error("Couldn't save config", ex);
-            }
+            settings.overrideTextures(pressed);
+            packSettings.saveConfigPrintError();
             if (reloadResources)
                 MyResourcePack.this.reloadResources = !MyResourcePack.this.reloadResources;
         };
@@ -222,7 +219,7 @@ public class MyResourcePack implements ModInitializer {
                 ? 60 + 4 + minecraft.font.width(component)
                 : 20 + 4 + minecraft.font.width(component);
         return reloadResources
-                ? new Switch(scaledWidth - width - 24 - 5, y, width, height, component, !setting.overrideTextures()) {
+                ? new Switch(scaledWidth - width - 24 - 5, y, width, height, component, !settings.overrideTextures()) {
             @Override
             public void onPress(InputWithModifiers inputWithModifiers) {
                 super.onPress(inputWithModifiers);
@@ -232,7 +229,7 @@ public class MyResourcePack implements ModInitializer {
         }
                 : Checkbox.builder(component, minecraft.font)
                 .pos(scaledWidth / 2 - (width / 2), y)
-                .selected(setting.overrideTextures())
+                .selected(settings.overrideTextures())
                 .onValueChange((_, selected) -> {
                     callBack.accept(selected);
                     onPress.accept(selected);

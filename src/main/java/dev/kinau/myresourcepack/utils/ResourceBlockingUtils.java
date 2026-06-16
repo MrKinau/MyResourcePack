@@ -7,7 +7,7 @@ import com.google.gson.stream.JsonReader;
 import dev.kinau.myresourcepack.MyResourcePack;
 import dev.kinau.myresourcepack.config.ResourceAction;
 import dev.kinau.myresourcepack.config.ResourceRule;
-import dev.kinau.myresourcepack.config.ServerSetting;
+import dev.kinau.myresourcepack.config.ServerSettings;
 import dev.kinau.myresourcepack.config.VanillaResourceAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -28,7 +28,9 @@ public class ResourceBlockingUtils {
     public static boolean isBlockingEnabled() {
         String currentServer = MyResourcePack.getInstance().getCurrentServer();
         if (currentServer == null) return false;
-        return !MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer).overrideTextures();
+        ServerSettings settings = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer, false);
+        if (settings == null) return false;
+        return !settings.overrideTextures();
     }
 
     public static boolean supportsMerging(Identifier identifier) {
@@ -36,16 +38,17 @@ public class ResourceBlockingUtils {
         return identifier.getPath().endsWith(".json");
     }
 
-    public static Optional<ServerSetting> getServerSetting() {
+    public static Optional<ServerSettings> getServerSetting() {
         String currentServer = MyResourcePack.getInstance().getCurrentServer();
         if (currentServer == null) return Optional.empty();
-        return Optional.of(MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer));
+        ServerSettings settings = MyResourcePack.getInstance().getPackSettings().getConfigData().getSettings(currentServer, false);
+        return Optional.ofNullable(settings);
     }
 
     public static ResourceAction getConfiguredResourceAction(Identifier identifier) {
-        Optional<ServerSetting> optSettings = getServerSetting();
+        Optional<ServerSettings> optSettings = getServerSetting();
         if (optSettings.isEmpty()) return ResourceAction.PASS;
-        ServerSetting setting = optSettings.get();
+        ServerSettings setting = optSettings.get();
         if (setting.overrideTextures()) return ResourceAction.PASS;
 
         String path = identifier.toString();
