@@ -12,6 +12,9 @@ public interface ServerDataExpander {
 
     MappedPackStatus myResourcePack$getPackStatus();
     void myResourcePack$setPackStatus(MappedPackStatus packStatus);
+    void myResourcePack$setPackStatusWithoutDirtyMark(MappedPackStatus packStatus);
+
+    boolean myResourcePack$isDirty();
 
     @Getter
     class MappedPackStatus {
