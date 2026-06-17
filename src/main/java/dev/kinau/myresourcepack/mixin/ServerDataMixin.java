@@ -18,6 +18,8 @@ public class ServerDataMixin implements ServerDataExpander {
 
     @Unique
     private MappedPackStatus myResourcePack$packStatus;
+    @Unique
+    private boolean myResourcePack$dirty;
 
     @Unique
     private static ServerSettings getServerSetting(ServerData serverData, boolean createIfMissing) {
@@ -43,13 +45,14 @@ public class ServerDataMixin implements ServerDataExpander {
         if (serverData instanceof ServerDataExpander serverDataExpander) {
             if (!ignoreAllPacks(serverData)) return;
             MyResourcePack.LOGGER.info("Ignoring all packs for {}", serverData.ip);
-            serverDataExpander.myResourcePack$setPackStatus(MappedPackStatus.IGNORED);
+            serverDataExpander.myResourcePack$setPackStatusWithoutDirtyMark(MappedPackStatus.IGNORED);
         }
     }
 
     @Inject(method = "write", at = @At("RETURN"))
     private void onWrite(CallbackInfoReturnable<CompoundTag> cir) {
-        CompoundTag tag = cir.getReturnValue();
+        if (!myResourcePack$dirty) return;
+        this.myResourcePack$dirty = false;
         if (myResourcePack$getPackStatus() != null) {
             ServerData serverData = (ServerData) (Object) this;
             ServerSettings settings = getServerSetting(serverData, false);
@@ -64,14 +67,14 @@ public class ServerDataMixin implements ServerDataExpander {
             if (ignoreAllPacks == newValue) return;
             settings.ignoreAllPacks(newValue);
             MyResourcePack.getInstance().getPackSettings().saveConfigPrintError();
-            tag.putString("myResourcePack$packStatus", myResourcePack$getPackStatus().getInternalName());
         }
     }
 
     @Inject(method = "copyFrom", at = @At("RETURN"))
     private void onCopyFrom(ServerData editingServer, CallbackInfo ci) {
         if (editingServer instanceof ServerDataExpander serverDataExpander) {
-            myResourcePack$setPackStatus(serverDataExpander.myResourcePack$getPackStatus());
+            myResourcePack$setPackStatusWithoutDirtyMark(serverDataExpander.myResourcePack$getPackStatus());
+            this.myResourcePack$dirty = serverDataExpander.myResourcePack$isDirty();
         }
     }
 
@@ -82,6 +85,17 @@ public class ServerDataMixin implements ServerDataExpander {
 
     @Override
     public void myResourcePack$setPackStatus(MappedPackStatus packStatus) {
+        myResourcePack$setPackStatusWithoutDirtyMark(packStatus);
+        this.myResourcePack$dirty = true;
+    }
+
+    @Override
+    public void myResourcePack$setPackStatusWithoutDirtyMark(MappedPackStatus packStatus) {
         this.myResourcePack$packStatus = packStatus;
+    }
+
+    @Override
+    public boolean myResourcePack$isDirty() {
+        return myResourcePack$dirty;
     }
 }
