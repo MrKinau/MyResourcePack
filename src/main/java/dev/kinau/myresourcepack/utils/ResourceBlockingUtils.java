@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ResourceBlockingUtils {
 
@@ -72,15 +73,21 @@ public class ResourceBlockingUtils {
             return new VanillaResourceAction(ResourceAction.PASS, false);
 
         boolean overridesVanilla = true;
-        try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-            if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier) == null) {
-                if (identifier.getPath().endsWith(PackResources.METADATA_EXTENSION)) {
-                    Identifier baseLoc = Identifier.tryBuild(identifier.getNamespace(), identifier.getPath().substring(0, identifier.getPath().length() - PackResources.METADATA_EXTENSION.length()));
-                    if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, baseLoc) == null)
-                        overridesVanilla = false;
-                } else {
-                    overridesVanilla = false;
+        try (Stream<PackResources> vanillaResources = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
+            if (vanillaResources.allMatch(vanillaResource -> {
+                if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier) == null) {
+                    if (identifier.getPath().endsWith(PackResources.METADATA_EXTENSION)) {
+                        Identifier baseLoc = Identifier.tryBuild(identifier.getNamespace(), identifier.getPath().substring(0, identifier.getPath().length() - PackResources.METADATA_EXTENSION.length()));
+                        if (vanillaResource.getResource(PackType.CLIENT_RESOURCES, baseLoc) == null) {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
                 }
+                return false;
+            })) {
+                overridesVanilla = false;
             }
         }
 
@@ -151,13 +158,26 @@ public class ResourceBlockingUtils {
             try {
                 ModelTextureData textures = getModelTextures(original.get());
                 if (textures != null) {
-                    try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        ModelTextureData vanillaTextures = getModelTextures(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
-                        if (!textures.textures().equals(vanillaTextures.textures())) {
-                            JsonObject root = textures.root();
-                            GsonTools.extendJsonObject(vanillaTextures.textures(), GsonTools.ConflictStrategy.PREFER_FIRST_OBJ, textures.textures());
-                            root.add("textures", vanillaTextures.textures());
-                            return new ByteArrayInputStream(root.toString().getBytes(StandardCharsets.UTF_8));
+                    try (Stream<PackResources> vanillaResources = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
+                        try {
+                            JsonObject root = null;
+                            for (PackResources vanillaResource : vanillaResources.toList()) {
+                                IoSupplier<InputStream> resourceStream = vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier);
+                                if (resourceStream != null) {
+                                    ModelTextureData vanillaTextures = getModelTextures(resourceStream.get());
+                                    if (!textures.textures().equals(vanillaTextures.textures())) {
+                                        if (root == null)
+                                            root = textures.root();
+                                        GsonTools.extendJsonObject(vanillaTextures.textures(), GsonTools.ConflictStrategy.PREFER_FIRST_OBJ, textures.textures());
+                                        root.add("textures", vanillaTextures.textures());
+                                    }
+                                }
+                            }
+                            if (root != null) {
+                                return new ByteArrayInputStream(root.toString().getBytes(StandardCharsets.UTF_8));
+                            }
+                        } catch (Exception ex) {
+                            MyResourcePack.LOGGER.error("Error while merging vanilla model data", ex);
                         }
                     }
                 }
@@ -173,16 +193,25 @@ public class ResourceBlockingUtils {
             try {
                 ItemModelData itemData = getItemModelData(original.get());
                 if (itemData != null) {
-                    try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        ItemModelData vanillaItemData = getItemModelData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
-                        if (itemData.modelType().equals("range_dispatch") || itemData.modelType().equals("select")) {
-                            JsonObject fallback = vanillaItemData.model();
-                            itemData.model().add("fallback", fallback);
-                            itemData.root().add("model", itemData.model());
-                        } else {
-                            itemData.root().add("model", vanillaItemData.model());
+                    try (Stream<PackResources> vanillaResources = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
+                        try {
+                            for (PackResources vanillaResource : vanillaResources.toList()) {
+                                IoSupplier<InputStream> resourceStream = vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier);
+                                if (resourceStream != null) {
+                                    ItemModelData vanillaItemData = getItemModelData(resourceStream.get());
+                                    if (itemData.modelType().equals("range_dispatch") || itemData.modelType().equals("select")) {
+                                        JsonObject fallback = vanillaItemData.model();
+                                        itemData.model().add("fallback", fallback);
+                                        itemData.root().add("model", itemData.model());
+                                    } else {
+                                        itemData.root().add("model", vanillaItemData.model());
+                                    }
+                                }
+                            }
+                            return new ByteArrayInputStream(itemData.root().toString().getBytes(StandardCharsets.UTF_8));
+                        } catch (Exception ex) {
+                            MyResourcePack.LOGGER.error("Error while merging vanilla item data", ex);
                         }
-                        return new ByteArrayInputStream(itemData.root().toString().getBytes(StandardCharsets.UTF_8));
                     }
                 }
                 return original.get();
@@ -207,11 +236,24 @@ public class ResourceBlockingUtils {
             try {
                 JsonObject jsonData = getJsonData(original.get());
                 if (jsonData != null) {
-                    try (PackResources vanillaResource = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
-                        JsonObject vanillaJsonData = getJsonData(vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier).get());
-                        if (vanillaJsonData != null) {
-                            GsonTools.extendJsonObject(jsonData, GsonTools.ConflictStrategy.PREFER_SECOND_OBJ, vanillaJsonData);
-                            return new ByteArrayInputStream(jsonData.toString().getBytes(StandardCharsets.UTF_8));
+                    try (Stream<PackResources> vanillaResources = Minecraft.getInstance().getResourcePackRepository().getPack(BuiltInPackSource.VANILLA_ID).open()) {
+                        try {
+                            boolean anyChange = false;
+                            for (PackResources vanillaResource : vanillaResources.toList()) {
+                                IoSupplier<InputStream> resourceStream = vanillaResource.getResource(PackType.CLIENT_RESOURCES, identifier);
+                                if (resourceStream != null) {
+                                    JsonObject vanillaJsonData = getJsonData(resourceStream.get());
+                                    if (vanillaJsonData != null) {
+                                        GsonTools.extendJsonObject(jsonData, GsonTools.ConflictStrategy.PREFER_SECOND_OBJ, vanillaJsonData);
+                                        anyChange = true;
+                                    }
+                                }
+                            }
+                            if (anyChange) {
+                                return new ByteArrayInputStream(jsonData.toString().getBytes(StandardCharsets.UTF_8));
+                            }
+                        } catch (Exception ex) {
+                            MyResourcePack.LOGGER.error("Error while merging vanilla json data", ex);
                         }
                     }
                 }

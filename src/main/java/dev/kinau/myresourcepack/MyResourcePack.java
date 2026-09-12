@@ -33,8 +33,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.CompositePackResources;
 import net.minecraft.server.packs.FilePackResources;
+import net.minecraft.server.packs.OverlayedPackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Getter
 public class MyResourcePack implements ModInitializer {
@@ -245,13 +246,15 @@ public class MyResourcePack implements ModInitializer {
         List<ResourceDirectory> packDirectories = new ArrayList<>();
         for (Pack pack : serverPacks) {
             ResourceDirectory root = new ResourceDirectory(Identifier.fromNamespaceAndPath("", ""));
-            try (PackResources packResources = pack.open()) {
-                packResources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
-                    if (packResources instanceof CompositePackResources || packResources instanceof FilePackResources) {
-                        ResourceDirectory directory = ((PackResourceExpander) packResources).myResourcePack$createResourceTree(PackType.CLIENT_RESOURCES, namespace);
-                        root.addChild(directory);
-                    }
-                });
+            try (Stream<PackResources> packResources = pack.open()) {
+                for (PackResources resources : packResources.toList()) {
+                    resources.getNamespaces(PackType.CLIENT_RESOURCES).forEach(namespace -> {
+                        if (resources instanceof OverlayedPackResources || resources instanceof FilePackResources) {
+                            ResourceDirectory directory = ((PackResourceExpander) resources).myResourcePack$createResourceTree(PackType.CLIENT_RESOURCES, namespace);
+                            root.addChild(directory);
+                        }
+                    });
+                }
             }
             packDirectories.add(root);
         }

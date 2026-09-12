@@ -4,7 +4,7 @@ import dev.kinau.myresourcepack.config.resource.ResourceDirectory;
 import dev.kinau.myresourcepack.config.resource.ResourceObject;
 import dev.kinau.myresourcepack.expander.PackResourceExpander;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.CompositePackResources;
+import net.minecraft.server.packs.OverlayedPackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import org.spongepowered.asm.mixin.Final;
@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
 
-@Mixin(CompositePackResources.class)
-public abstract class CompositePackResourcesMixin implements PackResourceExpander {
+@Mixin(OverlayedPackResources.class)
+public abstract class OverlayedPackResourcesMixin implements PackResourceExpander {
 
 	@Shadow
 	@Final
